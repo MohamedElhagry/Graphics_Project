@@ -17,7 +17,7 @@ int Round(double x)
 {
     return (int)(x + 0.5);
 }
-void DrawLine(int x1, int y1, int x2, int y2)
+void DrawLine1(int x1, int y1, int x2, int y2)
 {
     glBegin(GL_POINTS);
     glColor3f(1, 0, 0);
