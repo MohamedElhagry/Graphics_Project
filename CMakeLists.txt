@@ -4,4 +4,4 @@ project(Project)
 set(CMAKE_CXX_STANDARD 14)
 
 add_executable(Project main.cpp)
-target_link_libraries(Project -lOpenGL32 -lGLU32 -lfreeGLUT)
+target_link_libraries(Project -lOpenGL32  -lGLU32 -lfreeGLUT)
