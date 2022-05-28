@@ -115,7 +115,6 @@ void AddColorPalletWindow(HWND hwnd) {
 
             // TODO Choose color for each button
 
-
         }
     }
 }

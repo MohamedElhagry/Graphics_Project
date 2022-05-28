@@ -83,3 +83,12 @@ void DrawCircle(int xc, int yc, int R, GLfloat *drawingColor) {
     glFlush();
 }
 
+void DrawRectangle(int x1, int y1, int x3, int y3, GLfloat *c) {
+    int x2 = x1, y2 = y3;
+    int x4 = x3, y4 = y1;
+    DrawLine(x1, y1, x2, y2, c);
+    DrawLine(x2, y2, x3, y3, c);
+    DrawLine(x3, y3, x4, y4, c);
+    DrawLine(x4, y4, x1, y1, c);
+}
+
