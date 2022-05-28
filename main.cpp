@@ -13,8 +13,6 @@ using namespace std;
 
 const int screenWidth = 800;
 const int screenHeight = 600;
-int Bitmap[screenWidth * screenHeight][3];
-
 
 /// create menu
 
@@ -34,62 +32,59 @@ void AddMenu(HWND hwnd) {
     SetMenu(hwnd, hmenu);
 }
 
-// end of meanu
+// end of menu
 
 /// Save and Load files
-
 void SaveFile(HWND hwnd) {
     RECT rect = {0};
-    ofstream myfile;
-    myfile.open("file.txt");
-    int Height = abs(rect.top - rect.bottom);
     GetWindowRect(hwnd, &rect);
+
     uint32_t *pixels = (uint32_t *) malloc(sizeof(uint32_t) * screenWidth * screenHeight);
     glReadPixels(rect.left, rect.top, screenWidth, screenHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-    for (int i = rect.left; i < rect.right; i++) {
-        for (int j = rect.top; j < rect.bottom; j++) {
 
-            myfile << pixels[j * screenHeight + i] << '\n';
+    ofstream myfile;
+    myfile.open("file.txt");
 
-        }
+    int long len = abs(screenWidth - rect.left) * abs(screenHeight - rect.top);
+    for (int long i = 0; i < len; i++) {
+        myfile << pixels[i] << '\n';
     }
 
     myfile.close();
     free(pixels);
 
     cout << "Saved as file.txt\n";
+    cout.flush();
 
-    // success sound
     MessageBeep(MB_ICONASTERISK);
 }
 
 void LoadFile(HWND hwnd) {
     glBegin(GL_POINTS);
+
     RECT rect = {0};
     ifstream myfile;
     myfile.open("file.txt");
     GetWindowRect(hwnd, &rect);
+    uint32_t pixel;
 
-    for (int i = rect.left; i < rect.right; i++) {
-        for (int j = rect.top; j < rect.bottom; j++) {
-            uint32_t data;
-            myfile >> data;
-
-            uint32_t red = (data >> 16) & 0xff;
-            uint32_t green = (data >> 8) & 0xff;
-            uint32_t blue = data & 0xff;
-
-            glColor3f(red, green, blue);
-            glVertex2d(i, j);
+    for (int i = 0; i < screenHeight; i++) {
+        for (int j = 0; j < screenWidth; j++) {
+            myfile >> pixel;
+            glColor4ubv((GLubyte *) &pixel);
+            glVertex2d(j, i);
         }
     }
 
     myfile.close();
     glEnd();
     glFlush();
-    cout << "Loaded from File.txt\n";
+
+    cout << "Loaded from file.txt\n";
+    cout.flush();
     MessageBeep(MB_ICONASTERISK);
-    // for errors sound
+
+//    for errors sound
 //    MessageBeep(MB_ICONHAND);
 }
 
@@ -122,6 +117,7 @@ void AddColorpalletWindow(HWND hwnd) {
 }
 
 void getColor(HWND hwnd) {
+    /// Get Color
 
     MessageBeep(MB_ICONASTERISK);
 }
@@ -129,11 +125,21 @@ void getColor(HWND hwnd) {
 
 /// clear screen "f. Implement item to clear screen from shapes"
 #define Clear_Screen 454
+void clearScreen() {
+    glBegin(GL_POINTS);
 
-void clearScreen(HWND hwnd) {
-    //TODO Clear Screen
-    hwnd = CreateWindowW(L"Main_Window", L"Window", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
-                         CW_USEDEFAULT, 368, 248, NULL, NULL, 0, NULL);
+
+    /// global background color
+    glColor3f(0,0,0);
+    for (int i = 0; i < screenHeight; i++) {
+        for (int j = 0; j < screenWidth; j++) {
+            glVertex2d(j, i);
+        }
+    }
+
+    cout<<"Screen Cleared\n";
+    glEnd();
+    glFlush();
 
     MessageBeep(MB_ICONASTERISK);
 }
@@ -278,7 +284,9 @@ MyWndProc(HWND
                     getColor(hwnd);
                     break;
                 case Clear_Screen:
-                    clearScreen(hwnd);
+                    clearScreen();
+                    glFlush();
+                    SwapBuffers(hdc);
                     MessageBeep(MB_ICONASTERISK);
                     break;
             }
@@ -353,7 +361,8 @@ WinMain(HINSTANCE
             style = CS_HREDRAW | CS_VREDRAW;
     RegisterClass(&wc);
     HWND hwnd = CreateWindow(reinterpret_cast<LPCSTR>(L"MyClass"), reinterpret_cast<LPCSTR>(L"My First Window"),
-                             WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0, 0, screenWidth, screenHeight, NULL, NULL, hinst,
+                             WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0, 0, screenWidth, screenHeight,
+                             NULL, NULL, hinst,
                              0);
     ShowWindow(hwnd, nsh
     );
