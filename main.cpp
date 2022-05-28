@@ -3,19 +3,23 @@
 #include <gl\GLu.h>
 #include <math.h>
 #include <iostream>
-#include <Commctrl.h>
 #include <fstream>
+
+#include "Draw Simple Shapes.cpp"
 
 #pragma comment(lib, "opengl32")
 #pragma comment(lib, "glu32")
 
 using namespace std;
 
+
+/// init painter
 const int screenWidth = 800;
 const int screenHeight = 600;
+GLfloat drawingColor[] = {1.0f,1.0f,0.0f};
+GLfloat backgroundColor[] = {1.0f,1.0f,1.0f};
 
 /// create menu
-
 HMENU hmenu;
 #define Save_File 1
 #define Load_File 2
@@ -31,8 +35,7 @@ void AddMenu(HWND hwnd) {
 
     SetMenu(hwnd, hmenu);
 }
-
-// end of menu
+/// end of menu
 
 /// Save and Load files
 void SaveFile(HWND hwnd) {
@@ -82,6 +85,7 @@ void LoadFile(HWND hwnd) {
 
     cout << "Loaded from file.txt\n";
     cout.flush();
+
     MessageBeep(MB_ICONASTERISK);
 
 //    for errors sound
@@ -90,6 +94,7 @@ void LoadFile(HWND hwnd) {
 
 /// Choose Color from pallet "e. Give me option to choose shape color before drawing from menu"
 #define Color_Button 101
+
 const int palletX = 0;
 const int palletY = 0;
 const int palletWidth = 40;
@@ -99,8 +104,7 @@ const int NpalletHigth = 2;
 const int stepright = palletWidth + 10;
 const int stepdown = palletHigth + 10;
 
-void AddColorpalletWindow(HWND hwnd) {
-
+void AddColorPalletWindow(HWND hwnd) {
     for (int y = palletY; y - palletY < NpalletHigth; y++) {
         for (int x = palletX; x - palletX < NpalletWidth; x++) {
 
@@ -110,107 +114,44 @@ void AddColorpalletWindow(HWND hwnd) {
                           NULL);
 
             // TODO Choose color for each button
-            /// DrawRect(hwnd,  x * stepright, y * stepdown,x * stepright + palletWidth,y * stepdown + palletHigth , RGB(0,255,0));
+
 
         }
     }
 }
 
-void getColor(HWND hwnd) {
+void getColor(LPARAM lp) {
     /// Get Color
-
+    glReadPixels(LOWORD(lp), HIWORD(lp), 1, 1, GL_RGBA, GL_FLOAT, drawingColor);
+    cout << "Color Changed to " << "R = " << drawingColor[0] <<" B = " << drawingColor[1] <<" G = " << drawingColor[2] << '\n';
+    cout.flush();
     MessageBeep(MB_ICONASTERISK);
 }
 
 
 /// clear screen "f. Implement item to clear screen from shapes"
 #define Clear_Screen 454
+
 void clearScreen() {
     glBegin(GL_POINTS);
 
 
     /// global background color
-    glColor3f(0,0,0);
+    glColor3f(backgroundColor[0],backgroundColor[1], backgroundColor[2]);
+
     for (int i = 0; i < screenHeight; i++) {
         for (int j = 0; j < screenWidth; j++) {
             glVertex2d(j, i);
         }
     }
 
-    cout<<"Screen Cleared\n";
+    cout << "Screen Cleared\n";
     glEnd();
     glFlush();
 
     MessageBeep(MB_ICONASTERISK);
 }
 
-
-void swap(int &x1, int &y1, int &x2, int &y2) {
-    int tmp = x1;
-    x1 = x2;
-    x2 = tmp;
-    tmp = y1;
-    y1 = y2;
-    y2 = tmp;
-}
-
-int Round(double x) {
-    return (int) (x + 0.5);
-}
-
-void DrawLine1(int x1, int y1, int x2, int y2) {
-    glBegin(GL_POINTS);
-    glColor3f(1, 0, 0);
-    int dx = x2 - x1;
-    int dy = y2 - y1;
-    if (abs(dy) <= abs(dx)) {
-        if (x1 > x2)swap(x1, y1, x2, y2);
-        glVertex2d(x1, y1);
-        int x = x1;
-        while (x < x2) {
-            x++;
-            double y = y1 + (double) (x - x1) * dy / dx;
-            glVertex2d(x, y);
-        }
-    } else {
-        if (y1 > y2)swap(x1, y1, x2, y2);
-        glVertex2d(x1, y1);
-        int y = y1;
-        while (y < y2) {
-            y++;
-            double x = x1 + (double) (y - y1) * dx / dy;
-            glVertex2d(x, y);
-        }
-    }
-    glEnd();
-    glFlush();
-}
-
-void Draw8Points(int xc, int yc, int x, int y) {
-    glVertex2d(xc + x, yc + y);
-    glVertex2d(xc + x, yc - y);
-    glVertex2d(xc - x, yc - y);
-    glVertex2d(xc - x, yc + y);
-    glVertex2d(xc + y, yc + x);
-    glVertex2d(xc + y, yc - x);
-    glVertex2d(xc - y, yc - x);
-    glVertex2d(xc - y, yc + x);
-}
-
-void DrawCircle1(int xc, int yc, int R) {
-    glBegin(GL_POINTS);
-    glColor3f(0, 0, 1);
-    int x = 0;
-    double y = R;
-    Draw8Points(xc, yc, 0, R);
-    while (x < y) {
-        x++;
-        y = sqrt((double) R * R - x * x);
-        Draw8Points(xc, yc, x, Round(y));
-    }
-    glEnd();
-    glFlush();
-}
 
 HGLRC InitOpenGl(HDC hdc) {
     PIXELFORMATDESCRIPTOR pfd = {
@@ -258,12 +199,7 @@ void EndOpenGl(HGLRC glrc) {
 }
 
 LRESULT WINAPI
-MyWndProc(HWND
-          hwnd,
-          UINT mcode, WPARAM
-          wp,
-          LPARAM lp
-) {
+MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
     static HDC hdc;
     static HGLRC glrc;
     switch (mcode) {
@@ -279,9 +215,6 @@ MyWndProc(HWND
                     LoadFile(hwnd);
                     glFlush();
                     SwapBuffers(hdc);
-                    break;
-                case Color_Button:
-                    getColor(hwnd);
                     break;
                 case Clear_Screen:
                     clearScreen();
@@ -302,16 +235,14 @@ MyWndProc(HWND
             CreateWindowW(L"BUTTON", L"Clear",
                           WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
                           100, 100, 50, 50, hwnd, (HMENU) Clear_Screen, NULL, NULL);
-            AddColorpalletWindow(hwnd);
-
+            //AddColorPalletWindow(hwnd);
             break;
         case WM_SIZE:
-            AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp)
-            );
+            AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));
             break;
         case WM_LBUTTONDOWN:
-            DrawCircle1(400, 400, 100);
-            DrawLine1(400, 400, 200, 200);
+            DrawCircle(400, 400, 100, drawingColor);
+            DrawLine(0, 0, 200, 200, drawingColor);
             glFlush();
 
             SwapBuffers(hdc);
@@ -321,56 +252,36 @@ MyWndProc(HWND
             break;
         case WM_DESTROY:
             EndOpenGl(glrc);
-            ReleaseDC(hwnd, hdc
-            );
+            ReleaseDC(hwnd, hdc);
             PostQuitMessage(0);
             break;
         default:
-            return
-                    DefWindowProc(hwnd, mcode, wp, lp
-                    );
+            return DefWindowProc(hwnd, mcode, wp, lp);
     }
     return 0;
 }
 
 int APIENTRY
-WinMain(HINSTANCE
-        hinst,
-        HINSTANCE pinst, LPSTR
-        cmd,
-        int nsh
-) {
+WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh) {
     WNDCLASS wc;
-    wc.
-            cbClsExtra = wc.cbWndExtra = 0;
-    wc.
-            hbrBackground = (HBRUSH) GetStockObject(LTGRAY_BRUSH);
-    wc.
-            hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.
-            hIcon = LoadIcon(NULL, IDI_APPLICATION);
-    wc.
-            hInstance = hinst;
-    wc.
-            lpfnWndProc = MyWndProc;
-    wc.
-            lpszClassName = reinterpret_cast<LPCSTR>(L"MyClass");
-    wc.
-            lpszMenuName = NULL;
-    wc.
-            style = CS_HREDRAW | CS_VREDRAW;
+    wc.cbClsExtra = wc.cbWndExtra = 0;
+    wc.hbrBackground = (HBRUSH) GetStockObject(LTGRAY_BRUSH);
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+    wc.hInstance = hinst;
+    wc.lpfnWndProc = MyWndProc;
+    wc.lpszClassName = reinterpret_cast<LPCSTR>(L"MyClass");
+    wc.lpszMenuName = NULL;
+    wc.style = CS_HREDRAW | CS_VREDRAW;
     RegisterClass(&wc);
-    HWND hwnd = CreateWindow(reinterpret_cast<LPCSTR>(L"MyClass"), reinterpret_cast<LPCSTR>(L"My First Window"),
+    HWND hwnd = CreateWindow(reinterpret_cast<LPCSTR>(L"MyClass"), reinterpret_cast<LPCSTR>(L"Paintet"),
                              WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0, 0, screenWidth, screenHeight,
                              NULL, NULL, hinst,
                              0);
-    ShowWindow(hwnd, nsh
-    );
+    ShowWindow(hwnd, nsh);
     UpdateWindow(hwnd);
     MSG msg;
-    while (
-            GetMessage(&msg, NULL,
-                       0, 0) > 0) {
+    while (GetMessage(&msg, NULL, 0, 0) > 0) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
