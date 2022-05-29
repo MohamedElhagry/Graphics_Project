@@ -189,7 +189,6 @@ void AdjustWindowFor2D(HDC hdc, int w, int h) {
     glViewport(0, 0, w, h);
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    SwapBuffers(hdc);
 }
 
 void EndOpenGl(HGLRC glrc) {
@@ -202,13 +201,12 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
     static HDC hdc;
     static HGLRC glrc;
     switch (mcode) {
-        //action listener
+        /// action listeners
         case WM_COMMAND:
             switch (wp) {
                 case Save_File:
                     SwapBuffers(hdc);
                     SaveFile(hwnd);
-                    SwapBuffers(hdc);
                     break;
                 case Load_File:
                     LoadFile(hwnd);
