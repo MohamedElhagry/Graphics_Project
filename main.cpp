@@ -115,7 +115,6 @@ void AddColorPalletWindow(HWND hwnd) {
 
             // TODO Choose color for each button
 
-
         }
     }
 }
@@ -217,13 +216,12 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
     static HGLRC glrc;
     static int x1, y1, x2, y2;
     switch (mcode) {
-        //action listener
+        /// action listeners
         case WM_COMMAND:
             switch (wp) {
                 case Save_File:
                     SwapBuffers(hdc);
                     SaveFile(hwnd);
-                    SwapBuffers(hdc);
                     break;
                 case Load_File:
                     LoadFile(hwnd);
