@@ -5,7 +5,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "Clipping algorithms.cpp"
+#include "Draw Simple Shapes.cpp"
 
 #pragma comment(lib, "opengl32")
 #pragma comment(lib, "glu32")
@@ -16,8 +16,8 @@ using namespace std;
 /// init painter
 const int screenWidth = 800;
 const int screenHeight = 600;
-GLfloat drawingColor[] = {1.0f, 1.0f, 0.0f};
-GLfloat backgroundColor[] = {1.0f, 1.0f, 1.0f};
+GLfloat drawingColor[] = {1.0f,1.0f,0.0f};
+GLfloat backgroundColor[] = {1.0f,1.0f,1.0f};
 
 /// create menu
 HMENU hmenu;
@@ -119,23 +119,10 @@ void AddColorPalletWindow(HWND hwnd) {
     }
 }
 
-void drawRectangles() {
-    glColor3f(0,1,1);
-    for (int y = palletY; y - palletY < NpalletHigth; y++) {
-        for (int x = palletX; x - palletX < NpalletWidth; x++) {
-            float xStart = x * stepright;
-            float yStart = y * stepdown;
-            glRectd(xStart, yStart, xStart + palletWidth, yStart + palletHigth);
-        }
-    }
-    glFlush();
-}
-
 void getColor(LPARAM lp) {
     /// Get Color
     glReadPixels(LOWORD(lp), HIWORD(lp), 1, 1, GL_RGBA, GL_FLOAT, drawingColor);
-    cout << "Color Changed to " << "R = " << drawingColor[0] << " B = " << drawingColor[1] << " G = " << drawingColor[2]
-         << '\n';
+    cout << "Color Changed to " << "R = " << drawingColor[0] <<" B = " << drawingColor[1] <<" G = " << drawingColor[2] << '\n';
     cout.flush();
     MessageBeep(MB_ICONASTERISK);
 }
@@ -149,7 +136,7 @@ void clearScreen() {
 
 
     /// global background color
-    glColor3f(backgroundColor[0], backgroundColor[1], backgroundColor[2]);
+    glColor3f(backgroundColor[0],backgroundColor[1], backgroundColor[2]);
 
     for (int i = 0; i < screenHeight; i++) {
         for (int j = 0; j < screenWidth; j++) {
@@ -170,9 +157,8 @@ HGLRC InitOpenGl(HDC hdc) {
             sizeof(PIXELFORMATDESCRIPTOR),   // size of this pfd
             1,                     // version number
             PFD_DRAW_TO_WINDOW |   // support window
-            PFD_SUPPORT_OPENGL    // support OpenGL
-            // |PFD_DOUBLEBUFFER,      // double buffered
-            ,
+            PFD_SUPPORT_OPENGL |   // support OpenGL
+            PFD_DOUBLEBUFFER,      // double buffered
             PFD_TYPE_RGBA,         // RGBA type
             24,                    // 24-bit color depth
             0, 0, 0, 0, 0, 0,      // color bits ignored
@@ -198,7 +184,7 @@ HGLRC InitOpenGl(HDC hdc) {
 void AdjustWindowFor2D(HDC hdc, int w, int h) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(0, w, h, 0);
+    gluOrtho2D(0, w, 0, h);
     glMatrixMode(GL_MODELVIEW);
     glViewport(0, 0, w, h);
     glClearColor(0, 0, 0, 0);
@@ -214,7 +200,6 @@ LRESULT WINAPI
 MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
     static HDC hdc;
     static HGLRC glrc;
-    static int x1, y1, x2, y2;
     switch (mcode) {
         /// action listeners
         case WM_COMMAND:
@@ -245,27 +230,19 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
 
             // add GUI to main window
             CreateWindowW(L"BUTTON", L"Clear",
-                          WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON ,
+                          WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
                           100, 100, 50, 50, hwnd, (HMENU) Clear_Screen, NULL, NULL);
             //AddColorPalletWindow(hwnd);
-
             break;
         case WM_SIZE:
             AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));
             break;
         case WM_LBUTTONDOWN:
-            x1 = LOWORD(lp);
-            y1 = HIWORD(lp);
-
-
-            break;
-        case WM_RBUTTONDOWN:
-            drawRectangles();
+            DrawCircle(400, 400, 100, drawingColor);
+            DrawLine(0, 0, 200, 200, drawingColor);
             glFlush();
-            break;
-        case WM_MOUSEMOVE:
-            DrawPoint(LOWORD(lp), HIWORD(lp), drawingColor);
-            //glFlush();
+
+            SwapBuffers(hdc);
             break;
         case WM_CLOSE:
             DestroyWindow(hwnd);
@@ -285,7 +262,7 @@ int APIENTRY
 WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh) {
     WNDCLASS wc;
     wc.cbClsExtra = wc.cbWndExtra = 0;
-    wc.hbrBackground = (HBRUSH) GetStockObject(WHITE_BRUSH);
+    wc.hbrBackground = (HBRUSH) GetStockObject(LTGRAY_BRUSH);
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
     wc.hInstance = hinst;
@@ -299,7 +276,6 @@ WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh) {
                              NULL, NULL, hinst,
                              0);
     ShowWindow(hwnd, nsh);
-    ShowCursor(false);
     UpdateWindow(hwnd);
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0) > 0) {
