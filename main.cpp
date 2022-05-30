@@ -35,6 +35,17 @@ void AddMenu(HWND hwnd) {
     AppendMenuW(FileMenu, MF_SEPARATOR, NULL, NULL);
     AppendMenuW(FileMenu, MF_STRING, Clear_Screen, L"Clear Screen");
     SetMenu(hwnd, hmenu);
+
+    HANDLE hIcon = LoadImage(0, ("icon.ico"), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE);
+    if (hIcon) {
+        //Change both icons to the same icon handle.
+        SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM) hIcon);
+        SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM) hIcon);
+
+        //This will ensure that the application icon gets changed too.
+        SendMessage(GetWindow(hwnd, GW_OWNER), WM_SETICON, ICON_SMALL, (LPARAM) hIcon);
+        SendMessage(GetWindow(hwnd, GW_OWNER), WM_SETICON, ICON_BIG, (LPARAM) hIcon);
+    }
 }
 /// end of menu
 
@@ -222,6 +233,7 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
 
             // add menu
             AddMenu(hwnd);
+
             break;
         case SHOW_TOOLS:
 
@@ -272,14 +284,14 @@ WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh) {
     wc.lpszMenuName = NULL;
     wc.style = CS_HREDRAW | CS_VREDRAW;
     RegisterClass(&wc);
-    HWND hwnd = CreateWindow(reinterpret_cast<LPCSTR>(L"MyClass"), reinterpret_cast<LPCSTR>(L"Paintet"),
-                             WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0, 0, screenWidth, screenHeight,
+    HWND hwnd = CreateWindow((LPCSTR) L"MyClass", (LPCSTR) "Paintit",
+                             WS_OVERLAPPED | WS_MINIMIZEBOX | WS_SYSMENU, 0, 0, screenWidth, screenHeight,
                              NULL, NULL, hinst,
                              0);
     ShowWindow(hwnd, nsh);
     UpdateWindow(hwnd);
     MSG msg;
-    SendMessage(hwnd, SHOW_TOOLS, 0, 0);
+    SendMessage(hwnd, SHOW_TOOLS, NULL, NULL);        /// show all the tools
     while (GetMessage(&msg, NULL, 0, 0) > 0) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
