@@ -121,8 +121,6 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 {
     HDC hdc;
     static int n = 5;
-//    cout << "Enter number of points: ";
-//    cin >> n;
     static vector<Point> p(n);
     static int index = 0;
     switch (mcode)
