@@ -60,7 +60,7 @@ void Draw8Points(int xc, int yc, int x, int y)
     glVertex2d(xc - y, yc - x);
     glVertex2d(xc - y, yc + x);
 }
-void DrawCircle1(int xc, int yc, int R)
+void DrawCircle(int xc, int yc, int R)
 {
     glBegin(GL_POINTS);
     glColor3f(0, 0, 1);
@@ -135,7 +135,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
             AdjustWindowFor2D(hdc,LOWORD(lp), HIWORD(lp));
             break;
         case WM_LBUTTONDOWN:
-            DrawCircle1(400, 400, 100);
+            DrawCircle(400, 400, 100);
             glFlush();
             SwapBuffers(hdc);
             break;
