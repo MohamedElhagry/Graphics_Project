@@ -16,13 +16,14 @@ using namespace std;
 /// init painter
 const int screenWidth = 800;
 const int screenHeight = 600;
-GLfloat drawingColor[] = {1.0f,1.0f,0.0f};
-GLfloat backgroundColor[] = {1.0f,1.0f,1.0f};
+GLfloat drawingColor[] = {1.0f, 1.0f, 0.0f};
+GLfloat backgroundColor[] = {1.0f, 1.0f, 1.0f};
 
 /// create menu
 HMENU hmenu;
 #define Save_File 1
 #define Load_File 2
+#define Clear_Screen 454
 
 void AddMenu(HWND hwnd) {
     hmenu = CreateMenu();
@@ -31,8 +32,8 @@ void AddMenu(HWND hwnd) {
 
     AppendMenuW(FileMenu, MF_STRING, Save_File, L"Save File");
     AppendMenuW(FileMenu, MF_STRING, Load_File, L"Load File");
-    // AppendMenuW(FileMenu, MF_SEPARATOR, NULL, NULL);
-
+    AppendMenuW(FileMenu, MF_SEPARATOR, NULL, NULL);
+    AppendMenuW(FileMenu, MF_STRING, Clear_Screen, L"Clear Screen");
     SetMenu(hwnd, hmenu);
 }
 /// end of menu
@@ -93,7 +94,7 @@ void LoadFile(HWND hwnd) {
 }
 
 /// Choose Color from pallet "e. Give me option to choose shape color before drawing from menu"
-#define Color_Button 101
+#define SHOW_TOOLS 101
 
 const int palletX = 0;
 const int palletY = 0;
@@ -108,11 +109,6 @@ void AddColorPalletWindow(HWND hwnd) {
     for (int y = palletY; y - palletY < NpalletHigth; y++) {
         for (int x = palletX; x - palletX < NpalletWidth; x++) {
 
-            CreateWindowW(L"BUTTON", NULL,
-                          WS_VISIBLE | WS_CHILD,
-                          x * stepright, y * stepdown, palletWidth, palletHigth, hwnd, (HMENU) Color_Button, NULL,
-                          NULL);
-
             // TODO Choose color for each button
 
         }
@@ -122,21 +118,20 @@ void AddColorPalletWindow(HWND hwnd) {
 void getColor(LPARAM lp) {
     /// Get Color
     glReadPixels(LOWORD(lp), HIWORD(lp), 1, 1, GL_RGBA, GL_FLOAT, drawingColor);
-    cout << "Color Changed to " << "R = " << drawingColor[0] <<" B = " << drawingColor[1] <<" G = " << drawingColor[2] << '\n';
+    cout << "Color Changed to " << "R = " << drawingColor[0] << " B = " << drawingColor[1] << " G = " << drawingColor[2]
+         << '\n';
     cout.flush();
     MessageBeep(MB_ICONASTERISK);
 }
 
 
 /// clear screen "f. Implement item to clear screen from shapes"
-#define Clear_Screen 454
-
 void clearScreen() {
     glBegin(GL_POINTS);
 
 
     /// global background color
-    glColor3f(backgroundColor[0],backgroundColor[1], backgroundColor[2]);
+    glColor3f(backgroundColor[0], backgroundColor[1], backgroundColor[2]);
 
     for (int i = 0; i < screenHeight; i++) {
         for (int j = 0; j < screenWidth; j++) {
@@ -227,12 +222,18 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
 
             // add menu
             AddMenu(hwnd);
+            break;
+        case SHOW_TOOLS:
 
-            // add GUI to main window
-            CreateWindowW(L"BUTTON", L"Clear",
-                          WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-                          100, 100, 50, 50, hwnd, (HMENU) Clear_Screen, NULL, NULL);
-            //AddColorPalletWindow(hwnd);
+            // TODO create the tools section of every thing
+            DrawCircle(400, 400, 100, drawingColor);
+            DrawLine(0, 0, 200, 200, drawingColor);
+            glFlush();
+
+            SwapBuffers(hdc);
+            cout << "worknig lol";
+            cout.flush();
+
             break;
         case WM_SIZE:
             AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));
@@ -278,6 +279,7 @@ WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh) {
     ShowWindow(hwnd, nsh);
     UpdateWindow(hwnd);
     MSG msg;
+    SendMessage(hwnd, SHOW_TOOLS, 0, 0);
     while (GetMessage(&msg, NULL, 0, 0) > 0) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
