@@ -2,82 +2,163 @@
 #include <gl\GL.h>
 #include <gl\GLu.h>
 #include <math.h>
-#pragma comment(lib,"opengl32")
-#pragma comment(lib,"glu32")
-void swap(int& x1, int& y1, int& x2, int& y2)
-{
-    int tmp = x1;
-    x1 = x2;
-    x2 = tmp;
-    tmp = y1;
-    y1 = y2;
-    y2 = tmp;
+#include <iostream>
+#include <fstream>
+
+#include "Draw Simple Shapes.cpp"
+
+#pragma comment(lib, "opengl32")
+#pragma comment(lib, "glu32")
+
+using namespace std;
+
+
+/// init painter
+const int screenWidth = 800;
+const int screenHeight = 600;
+GLfloat drawingColor[] = {1.0f, 1.0f, 0.0f};
+GLfloat backgroundColor[] = {1.0f, 1.0f, 1.0f};
+
+/// create menu
+HMENU hmenu;
+#define Save_File 1
+#define Load_File 2
+#define Clear_Screen 454
+
+void AddMenu(HWND hwnd) {
+    hmenu = CreateMenu();
+    HMENU FileMenu = CreateMenu();
+    AppendMenuW(hmenu, MF_POPUP, (UINT_PTR) FileMenu, L"File");
+
+    AppendMenuW(FileMenu, MF_STRING, Save_File, L"Save File");
+    AppendMenuW(FileMenu, MF_STRING, Load_File, L"Load File");
+    AppendMenuW(FileMenu, MF_SEPARATOR, NULL, NULL);
+    AppendMenuW(FileMenu, MF_STRING, Clear_Screen, L"Clear Screen");
+    SetMenu(hwnd, hmenu);
+
+    HANDLE hIcon = LoadImage(0, ("icon.ico"), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE);
+    if (hIcon) {
+        //Change both icons to the same icon handle.
+        SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM) hIcon);
+        SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM) hIcon);
+
+        //This will ensure that the application icon gets changed too.
+        SendMessage(GetWindow(hwnd, GW_OWNER), WM_SETICON, ICON_SMALL, (LPARAM) hIcon);
+        SendMessage(GetWindow(hwnd, GW_OWNER), WM_SETICON, ICON_BIG, (LPARAM) hIcon);
+    }
 }
-int Round(double x)
-{
-    return (int)(x + 0.5);
+/// end of menu
+
+/// Save and Load files
+void SaveFile(HWND hwnd) {
+    RECT rect = {0};
+    GetWindowRect(hwnd, &rect);
+
+    uint32_t *pixels = (uint32_t *) malloc(sizeof(uint32_t) * screenWidth * screenHeight);
+    glReadPixels(rect.left, rect.top, screenWidth, screenHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+    ofstream myfile;
+    myfile.open("file.txt");
+
+    int long len = abs(screenWidth - rect.left) * abs(screenHeight - rect.top);
+    for (int long i = 0; i < len; i++) {
+        myfile << pixels[i] << '\n';
+    }
+
+    myfile.close();
+    free(pixels);
+
+    cout << "Saved as file.txt\n";
+    cout.flush();
+
+    MessageBeep(MB_ICONASTERISK);
 }
-void DrawLine(int x1, int y1, int x2, int y2)
-{
+
+void LoadFile(HWND hwnd) {
     glBegin(GL_POINTS);
-    glColor3f(1, 0, 0);
-    int dx = x2 - x1;
-    int dy = y2 - y1;
-    if (abs(dy) <= abs(dx))
-    {
-        if (x1 > x2)swap(x1, y1, x2, y2);
-        glVertex2d(x1, y1);
-        int x = x1;
-        while (x < x2)
-        {
-            x++;
-            double y = y1 + (double)(x - x1)*dy / dx;
-            glVertex2d(x, y);
+
+    RECT rect = {0};
+    ifstream myfile;
+    myfile.open("file.txt");
+    GetWindowRect(hwnd, &rect);
+    uint32_t pixel;
+
+    for (int i = 0; i < screenHeight; i++) {
+        for (int j = 0; j < screenWidth; j++) {
+            myfile >> pixel;
+            glColor4ubv((GLubyte *) &pixel);
+            glVertex2d(j, i);
         }
     }
-    else {
-        if (y1 > y2)swap(x1, y1, x2, y2);
-        glVertex2d(x1, y1);
-        int y = y1;
-        while (y < y2)
-        {
-            y++;
-            double x = x1 + (double)(y - y1)*dx / dy;
-            glVertex2d(x, y);
+
+    myfile.close();
+    glEnd();
+    glFlush();
+
+    cout << "Loaded from file.txt\n";
+    cout.flush();
+
+    MessageBeep(MB_ICONASTERISK);
+
+//    for errors sound
+//    MessageBeep(MB_ICONHAND);
+}
+
+/// Choose Color from pallet "e. Give me option to choose shape color before drawing from menu"
+#define SHOW_TOOLS 101
+
+const int palletX = 0;
+const int palletY = 0;
+const int palletWidth = 40;
+const int palletHigth = 40;
+const int NpalletWidth = 6;
+const int NpalletHigth = 2;
+const int stepright = palletWidth + 10;
+const int stepdown = palletHigth + 10;
+
+void AddColorPalletWindow(HWND hwnd) {
+    for (int y = palletY; y - palletY < NpalletHigth; y++) {
+        for (int x = palletX; x - palletX < NpalletWidth; x++) {
+
+            // TODO Choose color for each button
+
         }
     }
-    glEnd();
-    glFlush();
 }
-void Draw8Points(int xc, int yc, int x, int y)
-{
-    glVertex2d(xc + x, yc + y);
-    glVertex2d(xc + x, yc - y);
-    glVertex2d(xc - x, yc - y);
-    glVertex2d(xc - x, yc + y);
-    glVertex2d(xc + y, yc + x);
-    glVertex2d(xc + y, yc - x);
-    glVertex2d(xc - y, yc - x);
-    glVertex2d(xc - y, yc + x);
+
+void getColor(LPARAM lp) {
+    /// Get Color
+    glReadPixels(LOWORD(lp), HIWORD(lp), 1, 1, GL_RGBA, GL_FLOAT, drawingColor);
+    cout << "Color Changed to " << "R = " << drawingColor[0] << " B = " << drawingColor[1] << " G = " << drawingColor[2]
+         << '\n';
+    cout.flush();
+    MessageBeep(MB_ICONASTERISK);
 }
-void DrawCircle(int xc, int yc, int R)
-{
+
+
+/// clear screen "f. Implement item to clear screen from shapes"
+void clearScreen() {
     glBegin(GL_POINTS);
-    glColor3f(0, 0, 1);
-    int x = 0;
-    double y = R;
-    Draw8Points(xc, yc, 0, R);
-    while (x < y)
-    {
-        x++;
-        y = sqrt((double)R*R - x*x);
-        Draw8Points(xc, yc, x, Round(y));
+
+
+    /// global background color
+    glColor3f(backgroundColor[0], backgroundColor[1], backgroundColor[2]);
+
+    for (int i = 0; i < screenHeight; i++) {
+        for (int j = 0; j < screenWidth; j++) {
+            glVertex2d(j, i);
+        }
     }
+
+    cout << "Screen Cleared\n";
     glEnd();
     glFlush();
+
+    MessageBeep(MB_ICONASTERISK);
 }
-HGLRC InitOpenGl(HDC hdc)
-{
+
+
+HGLRC InitOpenGl(HDC hdc) {
     PIXELFORMATDESCRIPTOR pfd = {
             sizeof(PIXELFORMATDESCRIPTOR),   // size of this pfd
             1,                     // version number
@@ -98,15 +179,15 @@ HGLRC InitOpenGl(HDC hdc)
             0,                     // reserved
             0, 0, 0                // layer masks ignored
     };
-    int  iPixelFormat;
+    int iPixelFormat;
     iPixelFormat = ChoosePixelFormat(hdc, &pfd);
     SetPixelFormat(hdc, iPixelFormat, &pfd);
     HGLRC glrc = wglCreateContext(hdc);
     wglMakeCurrent(hdc, glrc);
     return glrc;
 }
-void AdjustWindowFor2D(HDC hdc,int w,int h)
-{
+
+void AdjustWindowFor2D(HDC hdc, int w, int h) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluOrtho2D(0, w, 0, h);
@@ -114,29 +195,66 @@ void AdjustWindowFor2D(HDC hdc,int w,int h)
     glViewport(0, 0, w, h);
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    SwapBuffers(hdc);
 }
-void EndOpenGl(HGLRC glrc)
-{
+
+void EndOpenGl(HGLRC glrc) {
     wglMakeCurrent(NULL, NULL);
     wglDeleteContext(glrc);
 }
-LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
-{
+
+LRESULT WINAPI
+MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
     static HDC hdc;
     static HGLRC glrc;
-    switch (mcode)
-    {
+    switch (mcode) {
+        /// action listeners
+        case WM_COMMAND:
+            switch (wp) {
+                case Save_File:
+                    SwapBuffers(hdc);
+                    SaveFile(hwnd);
+                    break;
+                case Load_File:
+                    LoadFile(hwnd);
+                    glFlush();
+                    SwapBuffers(hdc);
+                    break;
+                case Clear_Screen:
+                    clearScreen();
+                    glFlush();
+                    SwapBuffers(hdc);
+                    MessageBeep(MB_ICONASTERISK);
+                    break;
+            }
+            break;
         case WM_CREATE:
             hdc = GetDC(hwnd);
             glrc = InitOpenGl(hdc);
+
+            // add menu
+            AddMenu(hwnd);
+
+            break;
+        case SHOW_TOOLS:
+
+            // TODO create the tools section of every thing
+            DrawCircle(400, 400, 100, drawingColor);
+            DrawLine(0, 0, 200, 200, drawingColor);
+            glFlush();
+
+            SwapBuffers(hdc);
+            cout << "worknig lol";
+            cout.flush();
+
             break;
         case WM_SIZE:
-            AdjustWindowFor2D(hdc,LOWORD(lp), HIWORD(lp));
+            AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));
             break;
         case WM_LBUTTONDOWN:
-            DrawCircle(400, 400, 100);
+            DrawCircle(400, 400, 100, drawingColor);
+            DrawLine(0, 0, 200, 200, drawingColor);
             glFlush();
+
             SwapBuffers(hdc);
             break;
         case WM_CLOSE:
@@ -147,15 +265,17 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
             ReleaseDC(hwnd, hdc);
             PostQuitMessage(0);
             break;
-        default: return DefWindowProc(hwnd, mcode, wp, lp);
+        default:
+            return DefWindowProc(hwnd, mcode, wp, lp);
     }
     return 0;
 }
-int APIENTRY WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh)
-{
+
+int APIENTRY
+WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh) {
     WNDCLASS wc;
     wc.cbClsExtra = wc.cbWndExtra = 0;
-    wc.hbrBackground = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
+    wc.hbrBackground = (HBRUSH) GetStockObject(LTGRAY_BRUSH);
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
     wc.hInstance = hinst;
@@ -164,12 +284,15 @@ int APIENTRY WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh)
     wc.lpszMenuName = NULL;
     wc.style = CS_HREDRAW | CS_VREDRAW;
     RegisterClass(&wc);
-    HWND hwnd = CreateWindow(reinterpret_cast<LPCSTR>(L"MyClass"), reinterpret_cast<LPCSTR>(L"My First Window"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0, 0, 800, 600, NULL, NULL, hinst, 0);
+    HWND hwnd = CreateWindow((LPCSTR) L"MyClass", (LPCSTR) "Paintit",
+                             WS_OVERLAPPED | WS_MINIMIZEBOX | WS_SYSMENU, 0, 0, screenWidth, screenHeight,
+                             NULL, NULL, hinst,
+                             0);
     ShowWindow(hwnd, nsh);
     UpdateWindow(hwnd);
     MSG msg;
-    while (GetMessage(&msg, NULL, 0, 0) > 0)
-    {
+    SendMessage(hwnd, SHOW_TOOLS, NULL, NULL);        /// show all the tools
+    while (GetMessage(&msg, NULL, 0, 0) > 0) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
