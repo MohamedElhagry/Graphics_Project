@@ -98,25 +98,106 @@ inline void clipLine(int xs, int ys, int xe, int ye, int left, int top, int righ
 
 
 
-bool inLeft(Point &p, int edge) {
+struct Vertex
+{
+    double x, y;
+    Vertex(int x1 = 0, int y1 = 0)
+    {
+        x = x1;
+        y = y1;
+    }
+};
+typedef vector<Vertex> VertexList;
+typedef bool (*IsInFunc) (Vertex& p, int edge);
+typedef Vertex (*IntersectFunc)(Vertex& p1, Vertex& p2, int edge);
+
+bool inLeft(Vertex &p, int edge) {
     return p.x >= edge;
 }
 
-bool inRight(Point &p, int edge) {
+bool inRight(Vertex &p, int edge) {
     return p.x <= edge;
 }
 
-bool inTop(Point &p, int edge) {
+bool inTop(Vertex &p, int edge) {
     return p.y >= edge;
 }
 
-bool inBottom(Point &p, int edge) {
+bool inBottom(Vertex &p, int edge) {
     return p.y <= edge;
 }
 
-inline void clipPolygon()
+Vertex VIntersect(Vertex& v1, Vertex& v2, int xedge)
 {
+    Vertex res;
+    res.x = xedge;
+    res.y = v1.y + (xedge - v1.x) * (v2.y - v1.y)/(v2.x - v1.x);
+    return res;
+}
 
+
+Vertex HIntersect(Vertex& v1, Vertex& v2, int yedge)
+{
+    Vertex res;
+    res.y = yedge;
+    res.x = v1.x + (yedge - v1.y) * (v2.x - v1.x)/(v2.y - v1.y);
+    return res;
+}
+
+inline VertexList clipWithEdge(VertexList p, int edge, IsInFunc In, IntersectFunc Intersect)
+{
+    VertexList  outList;
+    Vertex v1 = p[p.size() - 1];
+    bool v1_in = In(v1, edge);
+    for(int i=0; i<(int)p.size(); i++)
+    {
+        Vertex v2 = p[i];
+        bool v2_in = In(v2,edge);
+        if(!v1_in && v2_in)
+        {
+            outList.push_back(Intersect(v1, v2, edge));
+            outList.push_back(v2);
+        }
+        else if(v1_in && v2_in) outList.push_back(v2);
+        else if(v1_in) outList.push_back(Intersect(v1, v2,edge));
+        v1 = v2;
+        v1_in = v2_in;
+    }
+
+    return outList;
+}
+
+
+inline void clipPolygon( Vertex *p, int n, int left, int top, int right, int bottom, GLfloat *drawingColor)
+{
+    VertexList vList;
+    for(int i=0; i<n; i++) vList.push_back(Vertex(p[i].x, p[i].y));
+    vList = clipWithEdge(vList, left, inLeft, VIntersect);
+    vList = clipWithEdge(vList, top, inTop, HIntersect);
+    vList = clipWithEdge(vList, right, inRight, VIntersect);
+    vList = clipWithEdge(vList, bottom, inBottom, HIntersect);
+    Vertex v1 =vList[vList.size() - 1];
+    for(int i=0; i<(int) vList.size(); i++)
+    {
+        Vertex v2 = vList[i];
+        drawLine(Round(v1.x), Round(v1.y), Round(v2.x), Round(v2.y), drawingColor);
+        v1 = v2;
+    }
+
+
+}
+
+inline void drawPolygon(Vertex *p, int n, GLfloat *drawingColor)
+{
+    VertexList vList;
+    for(int i=0; i<n; i++) vList.push_back(Vertex(p[i].x, p[i].y));
+    Vertex v1 =vList[vList.size() - 1];
+    for(int i=0; i<(int) vList.size(); i++)
+    {
+        Vertex v2 = vList[i];
+        drawLine(Round(v1.x), Round(v1.y), Round(v2.x), Round(v2.y), drawingColor);
+        v1 = v2;
+    }
 }
 
 
