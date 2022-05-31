@@ -7,6 +7,8 @@
 #include "DrawSimpleShapes.h"
 #include "hermitFilling.h"
 #include "fillingQuarter.h"
+#include <string>
+#include <cstring>
 
 #pragma comment(lib, "opengl32")
 #pragma comment(lib, "glu32")
@@ -18,6 +20,7 @@ using namespace std;
 const int toolsHigth = 100;
 const int screenWidth = 800;
 const int screenHeight = 600 - toolsHigth;
+bool defaultAlgorithms = 0;
 GLfloat drawingColor[] = {1.0f, 1.0f, 0.0f};
 GLfloat backgroundColor[] = {1.0f, 1.0f, 1.0f};
 
@@ -26,16 +29,21 @@ HMENU hmenu;
 #define Save_File 1
 #define Load_File 2
 #define Clear_Screen 454
-
+#define Default 222
 void AddMenu(HWND hwnd) {
     hmenu = CreateMenu();
     HMENU FileMenu = CreateMenu();
+    HMENU ToolsMenu = CreateMenu();
+
     AppendMenuW(hmenu, MF_POPUP, (UINT_PTR) FileMenu, L"File");
+    AppendMenuW(hmenu, MF_POPUP, (UINT_PTR) ToolsMenu, L"Tools");
 
     AppendMenuW(FileMenu, MF_STRING, Save_File, L"Save File");
     AppendMenuW(FileMenu, MF_STRING, Load_File, L"Load File");
-    AppendMenuW(FileMenu, MF_SEPARATOR, NULL, L"Space");
-    AppendMenuW(FileMenu, MF_STRING, Clear_Screen, L"Clear Screen");
+
+    AppendMenuW(ToolsMenu, MF_STRING, Clear_Screen, L"Clear Screen");
+    AppendMenuW(ToolsMenu, MF_STRING, Default, L"Default Algorithms");
+
     SetMenu(hwnd, hmenu);
 
     HANDLE hIcon = LoadImage(0, ("icon.ico"), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE);
@@ -146,18 +154,18 @@ GLfloat Colors[NpalletWidth * NpalletHigth][3] = {{1.0f, 0,    0},      // Red
                                                   {0,    0,    0},
                                                   {0,    0,    0},
                                                   {0,    0,    0}};
-vector<vector<int>> toolsButton;
+vector<vector<int>> colorButtons;
 
-void drawBlock(int x1, int y1, int x3, int y3, GLfloat *c) {
+void drawBlock(int x1, int y1, int x3, int y3, vector<vector<int>> &buttons, GLfloat *c) {
     FillRectangleWithHermite(x1, y1, x3, y3, c);
     drawRectangle(x1, y1, x3, y3, toolsShading);
-    toolsButton.push_back({x1, x3, y1, y3});
+    buttons.push_back({x1, x3, y1, y3});
 }
 
-int chooseTool(int x, int y) {
+int chooseTool(int x, int y, vector<vector<int>> &buttons) {
     int i = 0;
-    while (i < toolsButton.size() &&
-           !(toolsButton[i][0] < x && toolsButton[i][1] > x && toolsButton[i][2] < y && toolsButton[i][3] > y)) {
+    while (i < buttons.size() &&
+           !(buttons[i][0] < x && buttons[i][1] > x && buttons[i][2] < y && buttons[i][3] > y)) {
         i++;
     }
     cout << i << '\n';
@@ -173,13 +181,51 @@ void addToolsSction() {
     for (int y = 0; y < NpalletHigth; y++) {
         for (int x = 0; x < NpalletWidth; x++) {
             drawBlock(palletX + x * stepright, palletY + y * stepdown, x * stepright + palletWidth,
-                      y * stepdown + palletHigth,
-                      Colors[i++]);
+                      y * stepdown + palletHigth, colorButtons, Colors[i++]);
 
         }
     }
+}
 
+#define Shape_choice 4004
+const int shapesX = 400;
+const int shapesY = 6;
+const int shapesWidth = 70;
+const int shapesHigth = 40;
+const int NshapesWidth = 4;
+const int NshapesHigth = 2;
+const int shapesright = shapesWidth + 10;
+const int shapesdown = shapesHigth + 5;
+const LPCTSTR shapes[] = {reinterpret_cast<LPCTSTR const>(L"Line"), reinterpret_cast<LPCTSTR const>(L"Square"),
+                          reinterpret_cast<LPCTSTR const>(L"Rectangle"),
+                          reinterpret_cast<LPCTSTR const>(L"Ellipse"), reinterpret_cast<LPCTSTR const>(L"Circle"),
+                          reinterpret_cast<LPCTSTR const>(L"Fill Circle"), reinterpret_cast<LPCTSTR const>(L"Fill"),
+                          reinterpret_cast<LPCTSTR const>(L"FloodFill"), reinterpret_cast<LPCTSTR const>(L"Curve"),
+                          reinterpret_cast<LPCTSTR const>(L"Clip")};
+vector<vector<int>> shapeBounds;
 
+void addShapesButtons(HWND hwnd) {
+    int i = 0, y, x;
+    for (y = 0; y < NshapesHigth; y++) {
+        for (x = 0; x < NshapesWidth; x++) {
+            CreateWindowW(L"BUTTON", reinterpret_cast<LPCWSTR>(shapes[i]),
+                          WS_VISIBLE | WS_CHILD,
+                          shapesX + x * shapesright, shapesY + y * shapesdown, shapesWidth,
+                          shapesHigth, hwnd, (HMENU) Shape_choice, NULL,
+                          NULL);
+            shapeBounds.push_back({shapesX + x * shapesright, shapesY + y * shapesdown, x * shapesright + shapesWidth,
+                                   y * shapesdown + shapesHigth});
+            i++;
+        }
+    }
+    y--;
+    CreateWindowW(L"BUTTON", reinterpret_cast<LPCWSTR>(shapes[i]),
+                  WS_VISIBLE | WS_CHILD,
+                  shapesX + x * shapesright, shapesY + y * shapesdown, shapesWidth,
+                  shapesHigth, hwnd, (HMENU) Shape_choice, NULL,
+                  NULL);
+    shapeBounds.push_back({shapesX + x * shapesright, shapesY + y * shapesdown, x * shapesright + shapesWidth,
+                           y * shapesdown + shapesHigth});
 }
 
 void getColor(LPARAM lp) {
@@ -271,6 +317,8 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
             // add menu
             AddMenu(hwnd);
 
+            // add shapes
+//            addShapesButtons(hwnd);
             break;
         case SHOW_TOOLS:
 
@@ -278,13 +326,13 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
             cout << "Tools Loaded\n";
             cout.flush();
             addToolsSction();
-
+            addShapesButtons(hwnd);
             break;
         case WM_SIZE:
             AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));
             break;
         case WM_LBUTTONDOWN:
-            chooseTool(LOWORD(lp), HIWORD(lp));
+//            chooseTool(LOWORD(lp), HIWORD(lp));
 
             break;
         case WM_CLOSE:
