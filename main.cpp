@@ -107,8 +107,8 @@ void LoadFile(HWND hwnd) {
 /// Choose Color from pallet "e. Give me option to choose shape color before drawing from menu"
 #define SHOW_TOOLS 101
 
-const int palletX = 0;
-const int palletY = 0;
+const int palletX = 5;
+const int palletY = 5;
 const int palletWidth = 40;
 const int palletHigth = 40;
 const int NpalletWidth = 6;
@@ -121,6 +121,8 @@ void AddColorPalletWindow(HWND hwnd) {
         for (int x = palletX; x - palletX < NpalletWidth; x++) {
 
             // TODO Choose color for each button
+            drawRectangle(x * stepright, y * stepdown, x * stepright + palletWidth, y * stepdown + palletHigth,
+                          drawingColor);
 
         }
     }
@@ -238,8 +240,6 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
         case SHOW_TOOLS:
 
             // TODO create the tools section of every thing
-            DrawCircle(400, 400, 100, drawingColor);
-            DrawLine(0, 0, 200, 200, drawingColor);
             glFlush();
 
             SwapBuffers(hdc);
@@ -251,8 +251,7 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
             AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));
             break;
         case WM_LBUTTONDOWN:
-            DrawCircle(400, 400, 100, drawingColor);
-            DrawLine(0, 0, 200, 200, drawingColor);
+
             glFlush();
 
             SwapBuffers(hdc);
@@ -271,8 +270,7 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
     return 0;
 }
 
-int APIENTRY
-WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh) {
+int APIENTRY WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh) {
     WNDCLASS wc;
     wc.cbClsExtra = wc.cbWndExtra = 0;
     wc.hbrBackground = (HBRUSH) GetStockObject(LTGRAY_BRUSH);
