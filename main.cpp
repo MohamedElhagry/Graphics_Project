@@ -5,7 +5,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "Clipping algorithms.cpp"
+#include "Draw Simple Shapes.cpp"
 
 #pragma comment(lib, "opengl32")
 #pragma comment(lib, "glu32")
@@ -23,6 +23,7 @@ GLfloat backgroundColor[] = {1.0f, 1.0f, 1.0f};
 HMENU hmenu;
 #define Save_File 1
 #define Load_File 2
+#define Clear_Screen 454
 
 void AddMenu(HWND hwnd) {
     hmenu = CreateMenu();
@@ -31,9 +32,20 @@ void AddMenu(HWND hwnd) {
 
     AppendMenuW(FileMenu, MF_STRING, Save_File, L"Save File");
     AppendMenuW(FileMenu, MF_STRING, Load_File, L"Load File");
-    // AppendMenuW(FileMenu, MF_SEPARATOR, NULL, NULL);
-
+    AppendMenuW(FileMenu, MF_SEPARATOR, NULL, NULL);
+    AppendMenuW(FileMenu, MF_STRING, Clear_Screen, L"Clear Screen");
     SetMenu(hwnd, hmenu);
+
+    HANDLE hIcon = LoadImage(0, ("icon.ico"), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE);
+    if (hIcon) {
+        //Change both icons to the same icon handle.
+        SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM) hIcon);
+        SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM) hIcon);
+
+        //This will ensure that the application icon gets changed too.
+        SendMessage(GetWindow(hwnd, GW_OWNER), WM_SETICON, ICON_SMALL, (LPARAM) hIcon);
+        SendMessage(GetWindow(hwnd, GW_OWNER), WM_SETICON, ICON_BIG, (LPARAM) hIcon);
+    }
 }
 /// end of menu
 
@@ -93,7 +105,7 @@ void LoadFile(HWND hwnd) {
 }
 
 /// Choose Color from pallet "e. Give me option to choose shape color before drawing from menu"
-#define Color_Button 101
+#define SHOW_TOOLS 101
 
 const int palletX = 0;
 const int palletY = 0;
@@ -108,27 +120,10 @@ void AddColorPalletWindow(HWND hwnd) {
     for (int y = palletY; y - palletY < NpalletHigth; y++) {
         for (int x = palletX; x - palletX < NpalletWidth; x++) {
 
-            CreateWindowW(L"BUTTON", NULL,
-                          WS_VISIBLE | WS_CHILD,
-                          x * stepright, y * stepdown, palletWidth, palletHigth, hwnd, (HMENU) Color_Button, NULL,
-                          NULL);
-
             // TODO Choose color for each button
 
         }
     }
-}
-
-void drawRectangles() {
-    glColor3f(0,1,1);
-    for (int y = palletY; y - palletY < NpalletHigth; y++) {
-        for (int x = palletX; x - palletX < NpalletWidth; x++) {
-            float xStart = x * stepright;
-            float yStart = y * stepdown;
-            glRectd(xStart, yStart, xStart + palletWidth, yStart + palletHigth);
-        }
-    }
-    glFlush();
 }
 
 void getColor(LPARAM lp) {
@@ -142,8 +137,6 @@ void getColor(LPARAM lp) {
 
 
 /// clear screen "f. Implement item to clear screen from shapes"
-#define Clear_Screen 454
-
 void clearScreen() {
     glBegin(GL_POINTS);
 
@@ -170,9 +163,8 @@ HGLRC InitOpenGl(HDC hdc) {
             sizeof(PIXELFORMATDESCRIPTOR),   // size of this pfd
             1,                     // version number
             PFD_DRAW_TO_WINDOW |   // support window
-            PFD_SUPPORT_OPENGL    // support OpenGL
-            // |PFD_DOUBLEBUFFER,      // double buffered
-            ,
+            PFD_SUPPORT_OPENGL |   // support OpenGL
+            PFD_DOUBLEBUFFER,      // double buffered
             PFD_TYPE_RGBA,         // RGBA type
             24,                    // 24-bit color depth
             0, 0, 0, 0, 0, 0,      // color bits ignored
@@ -198,7 +190,7 @@ HGLRC InitOpenGl(HDC hdc) {
 void AdjustWindowFor2D(HDC hdc, int w, int h) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(0, w, h, 0);
+    gluOrtho2D(0, w, 0, h);
     glMatrixMode(GL_MODELVIEW);
     glViewport(0, 0, w, h);
     glClearColor(0, 0, 0, 0);
@@ -214,7 +206,6 @@ LRESULT WINAPI
 MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
     static HDC hdc;
     static HGLRC glrc;
-    static int x1, y1, x2, y2;
     switch (mcode) {
         /// action listeners
         case WM_COMMAND:
@@ -243,29 +234,28 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
             // add menu
             AddMenu(hwnd);
 
-            // add GUI to main window
-            CreateWindowW(L"BUTTON", L"Clear",
-                          WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON ,
-                          100, 100, 50, 50, hwnd, (HMENU) Clear_Screen, NULL, NULL);
-            //AddColorPalletWindow(hwnd);
+            break;
+        case SHOW_TOOLS:
+
+            // TODO create the tools section of every thing
+            DrawCircle(400, 400, 100, drawingColor);
+            DrawLine(0, 0, 200, 200, drawingColor);
+            glFlush();
+
+            SwapBuffers(hdc);
+            cout << "worknig lol";
+            cout.flush();
 
             break;
         case WM_SIZE:
             AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));
             break;
         case WM_LBUTTONDOWN:
-            x1 = LOWORD(lp);
-            y1 = HIWORD(lp);
-
-
-            break;
-        case WM_RBUTTONDOWN:
-            drawRectangles();
+            DrawCircle(400, 400, 100, drawingColor);
+            DrawLine(0, 0, 200, 200, drawingColor);
             glFlush();
-            break;
-        case WM_MOUSEMOVE:
-            DrawPoint(LOWORD(lp), HIWORD(lp), drawingColor);
-            //glFlush();
+
+            SwapBuffers(hdc);
             break;
         case WM_CLOSE:
             DestroyWindow(hwnd);
@@ -285,7 +275,7 @@ int APIENTRY
 WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh) {
     WNDCLASS wc;
     wc.cbClsExtra = wc.cbWndExtra = 0;
-    wc.hbrBackground = (HBRUSH) GetStockObject(WHITE_BRUSH);
+    wc.hbrBackground = (HBRUSH) GetStockObject(LTGRAY_BRUSH);
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
     wc.hInstance = hinst;
@@ -294,14 +284,14 @@ WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh) {
     wc.lpszMenuName = NULL;
     wc.style = CS_HREDRAW | CS_VREDRAW;
     RegisterClass(&wc);
-    HWND hwnd = CreateWindow(reinterpret_cast<LPCSTR>(L"MyClass"), reinterpret_cast<LPCSTR>(L"Paintet"),
-                             WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0, 0, screenWidth, screenHeight,
+    HWND hwnd = CreateWindow((LPCSTR) L"MyClass", (LPCSTR) "Paintit",
+                             WS_OVERLAPPED | WS_MINIMIZEBOX | WS_SYSMENU, 0, 0, screenWidth, screenHeight,
                              NULL, NULL, hinst,
                              0);
     ShowWindow(hwnd, nsh);
-    ShowCursor(false);
     UpdateWindow(hwnd);
     MSG msg;
+    SendMessage(hwnd, SHOW_TOOLS, NULL, NULL);        /// show all the tools
     while (GetMessage(&msg, NULL, 0, 0) > 0) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
