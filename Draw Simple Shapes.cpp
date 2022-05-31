@@ -12,7 +12,19 @@ void swap(int &x1, int &y1, int &x2, int &y2) {
     y2 = tmp;
 }
 
-void DrawPoint(int x, int y, GLfloat *drawingColor) {
+
+double max(double a, double b)
+{
+    if(a > b)
+        return a;
+    return b;
+}
+
+int Round(double x) {
+    return (int) (x + 0.5);
+}
+
+void drawPoint(int x, int y, GLfloat *drawingColor) {
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
     glVertex2d(x, y);
@@ -21,7 +33,15 @@ void DrawPoint(int x, int y, GLfloat *drawingColor) {
     glFlush();
 }
 
-void DrawLine(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
+
+//Line algorithms
+
+void drawLineMidPoint(int x1, int y1, int x2, int y2, GLfloat *drawingColor);
+void drawLine(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
+    drawLineMidPoint(x1,y1,x2,y2,drawingColor);
+}
+
+void drawLineDDA(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
 
@@ -50,11 +70,119 @@ void DrawLine(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
     glFlush();
 }
 
-int Round(double x) {
-    return (int) (x + 0.5);
+void drawLineMidPoint(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
+    glBegin(GL_POINTS);
+    glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
+
+    if (x1 > x2) {
+        swap(x1, y1, x2, y2);
+    }
+
+    int dx = x2 - x1;
+    int dy = y2 - y1;
+    int x = x1;
+    int y = y1;
+
+    if (abs(dx) >= abs(dy)) {
+
+        if (dy > 0) {
+
+            int d = dx - 2 * dy;
+            int d1 = -2 * dy;
+            int d2 = 2 * (dx - dy);
+            glVertex2d(x, y);
+            while (x < x2) {
+                if (d >= 0) {
+                    d += d1;
+                } else {
+                    y++;
+                    d += d2;
+                }
+                x++;
+                glVertex2d(x, y);
+            }
+
+
+        } else {//dy < 0
+
+            int d = -dx - 2 * dy;
+            int d1 = -2 * (dx + dy);
+            int d2 = -2 * dy;
+            glVertex2d(x, y);
+            while (x < x2) {
+                if (d >= 0) {
+                    y--;
+                    d += d1;
+                } else {
+                    d += d2;
+                }
+                x++;
+                glVertex2d(x, y);
+            }
+
+        }
+    } else { // slope > 1
+        if (dy > 0) {
+
+            int d = 2 * dx - dy;
+            int d1 = 2 * (dx - dy);
+            int d2 = 2 * dx;
+            glVertex2d(x, y);
+            while (y < y2) {
+                if (d >= 0) {
+                    x++;
+                    d += d1;
+                } else {
+                    d += d2;
+                }
+                y++;
+                glVertex2d(x, y);
+            }
+
+        } else {// dy < 0
+
+            int d = -2 * dx - dy;
+            int d1 = -2 * dx;
+            int d2 = -2 * ( dx + dy);
+            glVertex2d(x, y);
+            while (y > y2) {
+                if (d >= 0) {
+                    d += d1;
+                } else {
+                    x++;
+                    d += d2;
+                }
+                y--;
+                glVertex2d(x, y);
+            }
+
+        }
+    }
+    glEnd();
+    glFlush();
 }
 
-void Draw8Points(int xc, int yc, int x, int y) {
+void drawLineParametric(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
+    glBegin(GL_POINTS);
+    glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
+
+    int dx = x2 - x1;
+    int dy = y2 - y1;
+    double x,  y;
+
+    for(double t = 0.0; t <= 1.0; t += 1.0/ max(abs(dx),abs(dy)))
+    {
+        x = x1 + t * dx;
+        y = y1 + t * dy;
+        glVertex2d(Round(x), Round(y));
+    }
+
+    glEnd();
+    glFlush();
+}
+
+//Circle algorithms
+void draw8Points(int xc, int yc, int x, int y) {
     glVertex2d(xc + x, yc + y);
     glVertex2d(xc + x, yc - y);
     glVertex2d(xc - x, yc - y);
@@ -66,29 +194,203 @@ void Draw8Points(int xc, int yc, int x, int y) {
 }
 
 
-void DrawCircle(int xc, int yc, int R, GLfloat *drawingColor) {
+void drawCircle(int xc, int yc, int R, GLfloat *drawingColor) {
 
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
     int x = 0;
     double y = R;
-    Draw8Points(xc, yc, 0, R);
+    draw8Points(xc, yc, 0, R);
     while (x < y) {
         x++;
         y = sqrt((double) R * R - x * x);
-        Draw8Points(xc, yc, x, Round(y));
+        draw8Points(xc, yc, x, Round(y));
     }
 
     glEnd();
     glFlush();
 }
 
-void DrawRectangle(int x1, int y1, int x3, int y3, GLfloat *c) {
+void drawCirclePolar(int xc, int yc, int R, GLfloat *drawingColor) {
+
+    glBegin(GL_POINTS);
+    glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
+    double x = R;
+    double y = 0;
+    double theta = 0;
+    double dTheta = 1.0/R;
+
+    while(x > y){
+        theta += dTheta ;
+        x = R * cos(theta);
+        y = R * sin(theta);
+        draw8Points(xc, yc, Round(x), Round(y));
+    }
+
+    glEnd();
+    glFlush();
+}
+
+void drawCirclePolarIterative(int xc, int yc, int R, GLfloat *drawingColor) {
+
+    glBegin(GL_POINTS);
+    glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
+    double x = R;
+    double y = 0;
+
+    double dTheta = 1.0/R;
+    double cdTheta = cos(dTheta);
+    double sdTheta = sin(dTheta);
+
+    while(x > y){
+        x = x * cdTheta - y * sdTheta;
+        y = x * sdTheta + y * cdTheta;
+        draw8Points(xc, yc, Round(x), Round(y));
+    }
+
+    glEnd();
+    glFlush();
+}
+
+void drawCircleMidPoint(int xc, int yc, int R, GLfloat *drawingColor) {
+
+    glBegin(GL_POINTS);
+    glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
+
+    int x = 0;
+    int y = R;
+    int d = 1 - R;
+    draw8Points(xc, yc, x, y);
+
+    while (x < y) {
+
+        if (d < 0) {
+            d += 2*x + 3;
+            x++;
+        } else {
+            d += 2*(x-y) + 5;
+            x++;
+            y--;
+        }
+
+        draw8Points(xc, yc, x, y);
+    }
+
+
+    glEnd();
+    glFlush();
+}
+
+void drawCircleMidPointModified(int xc, int yc, int R, GLfloat *drawingColor) {
+
+    glBegin(GL_POINTS);
+    glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
+
+    int x = 0;
+    int y = R;
+    int d = 1 - R;
+    int d1 = 3;
+    int d2 = 5 - 2*R ;
+    draw8Points(xc, yc, x, y);
+
+    while (x < y) {
+
+        if (d < 0) {
+            d += d1;
+            d2 += 2;
+            x++;
+        } else {
+            d += d2;
+            d2 += 4;
+            x++;
+            y--;
+        }
+        d1 += 2;
+
+        draw8Points(xc, yc, x, y);
+    }
+
+
+    glEnd();
+    glFlush();
+}
+
+
+//Ellipse Algorithms
+
+void Draw4Points( int xc, int yc, int x, int y) {
+    glVertex2d( xc + x, yc + y);
+    glVertex2d( xc - x, yc + y);
+    glVertex2d( xc + x, yc - y);
+    glVertex2d( xc - x, yc - y);
+}
+
+void drawEllipsePolar(int xc, int yc, int A, int B, GLfloat *drawingColor)
+{
+    glBegin(GL_POINTS);
+    glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
+
+    double x = A;
+    double y = 0;
+
+    Draw4Points(xc, yc, Round(x), Round(y));
+    int mx = A;
+    if (B > mx)
+        mx = B;
+
+    double dtheta = 1.0 / mx;
+    double stheta = sin(dtheta);
+    double ctheta = cos(dtheta);
+    int cntr = 0;
+
+    while (cntr < 2 * mx) {
+        double x1 = x * ctheta - (A * y * stheta / B);
+        y = y * ctheta + (B * x * stheta / A);
+        cntr++;
+
+        x = x1;
+        Draw4Points(xc, yc, Round(x), Round(y));
+    }
+
+    glEnd();
+    glFlush();
+}
+
+void drawEllipseMidPoint(int xc, int yc, int A, int B, GLfloat *drawingColor)
+{
+    glBegin(GL_POINTS);
+    glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
+
+    int Asq = A * A;
+    int Bsq = B * B;
+    //7th quad
+    int x = -A;
+    int  y = 0;
+    int d = -4 * Bsq * A + 4 * Asq + Bsq;
+
+    Draw4Points( xc, yc, x, y);
+    while (abs(x) * Bsq > abs(y) * Asq) {
+        if (d < 0) {
+            d += 8 * Asq * y + 12 * Asq;
+            y++;
+        } else {
+            d += 8 * Asq * y + 12 * Asq + 8 * Bsq * x + 8 * Bsq;
+            x++;
+            y++;
+        }
+        Draw4Points( xc, yc, x, y);
+    }
+
+    glEnd();
+    glFlush();
+}
+
+void drawRectangle(int x1, int y1, int x3, int y3, GLfloat *c) {
     int x2 = x1, y2 = y3;
     int x4 = x3, y4 = y1;
-    DrawLine(x1, y1, x2, y2, c);
-    DrawLine(x2, y2, x3, y3, c);
-    DrawLine(x3, y3, x4, y4, c);
-    DrawLine(x4, y4, x1, y1, c);
+    drawLine(x1, y1, x2, y2, c);
+    drawLine(x2, y2, x3, y3, c);
+    drawLine(x3, y3, x4, y4, c);
+    drawLine(x4, y4, x1, y1, c);
 }
 

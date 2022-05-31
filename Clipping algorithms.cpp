@@ -5,6 +5,7 @@
 #include "Draw Simple Shapes.cpp"
 using namespace std;
 
+//Rectangular clipping window
 //utilities
 union OutCode{
     unsigned All:4;
@@ -45,8 +46,7 @@ Point HIntersect(double xs, double ys, double xe, double ye, int y){
     return p;
 }
 
-//Rectangular clipping window
-void clipPoint(int x, int y, int left, int top, int right, int bot){
+void clipPoint(int x, int y, int left, int top, int right, int bot, GLfloat c){
     glBegin(GL_POINTS);
     glColor3f(1, 0, 0);
     if(x >= left && x <= right && y >= top && y <= bot){
@@ -57,7 +57,7 @@ void clipPoint(int x, int y, int left, int top, int right, int bot){
 }
 
 //Cohen Sutherland
-void clipLine(int xs, int ys, int xe, int ye, int left, int top, int right, int bot)
+void clipLine(int xs, int ys, int xe, int ye, int left, int top, int right, int bot, GLfloat* c)
 {
     double x1 = xs, y1 = ys, x2 = xe, y2 = ye;
     OutCode oc1 = getOutCode(x1,y1,left,top,right,bot);
@@ -92,12 +92,13 @@ void clipLine(int xs, int ys, int xe, int ye, int left, int top, int right, int 
     }
 
     if( !(oc1.All | oc2.All)){
-        DrawLine(x1,y1,x2,y2, true);
+        drawLine(x1,y1,x2,y2, c );
     }
-//    DrawLine(left,bot,right,bot,false);
-//    DrawLine(left,top,left,bot,false);
-//    DrawLine(left,top,right,top,false);
-//    DrawLine(right,top,right,bot,false);
+
+}
+
+void clipPolygon()
+{
 
 }
 
@@ -115,7 +116,7 @@ bool pointInsideLine(int x, int y, int xs, int ys, int xe, int ye){
     if(ys > ye)
         swap(ys, ye);
 
-    return x <= xe && x >= xs && y >= ye && y <= ys;
+    return x <= xe && x >= xs && y >= ys && y <= ye;
 }
 
 //still under development
@@ -133,20 +134,19 @@ bool CIntersect(double xs, double ys, double xe, double ye, double xc, double yc
 
 
     // greater x value
-    double x1 = (-b + sqrt(b*b - 4*a*c)) / (2*a);
+    double x1 = (-b - sqrt(b*b - 4*a*c)) / (2*a);
     double y1 = ys + (x1 - xs) / dx * dy;
 
     //smaller x value
-    double x2 = (-b - sqrt(b*b - 4*a*c)) / (2*a);
+    double x2 = (-b + sqrt(b*b - 4*a*c)) / (2*a);
     double y2 = ys + (x2 - xs) / dx * dy;
 
-    /*
+
     if(xs > xe)
     {
         swap(xs, xe);
         swap(ys,ye);
     }
-    */
 
 
     if(pointInsideLine(x1,y1, xs,ys,xe,ye)){
@@ -166,19 +166,17 @@ bool CIntersect(double xs, double ys, double xe, double ye, double xc, double yc
     return true;
 }
 
-void clipPointFromCircle(int x, int y, int xc, int yc, int R){
+void clipPointFromCircle(int x, int y, int xc, int yc, int R, GLfloat *c){
     if(inside(x,y,xc,yc,R))
-        DrawPoint(x,y);
+        drawPoint(x, y, c);
 }
 
-void clipLineFromCircle(int xs,int ys, int xe, int ye, int xc, int yc, int R){
+void clipLineFromCircle(int xs, int ys, int xe, int ye, int xc, int yc, int R, GLfloat *c){
     Point p1, p2;
     bool intersects = CIntersect(xs ,ys, xe, ye, xc, yc, R, p1, p2);
     if(!intersects)
         return;
 
-    DrawCircle(xc,yc,R);
-    DrawLine(xs,ys,xe,ye);
-    DrawCircle(p1.x, p1.y,4);
-    DrawCircle(p2.x, p2.y,4);
+    drawCircle(xc,yc,R, c);
+    drawLine(p1.x,p1.y,p2.x,p2.y,c);
 }
