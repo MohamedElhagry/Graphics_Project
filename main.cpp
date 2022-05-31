@@ -32,7 +32,7 @@ void AddMenu(HWND hwnd) {
 
     AppendMenuW(FileMenu, MF_STRING, Save_File, L"Save File");
     AppendMenuW(FileMenu, MF_STRING, Load_File, L"Load File");
-    AppendMenuW(FileMenu, MF_SEPARATOR, NULL, NULL);
+    AppendMenuW(FileMenu, MF_SEPARATOR, NULL, L"Space");
     AppendMenuW(FileMenu, MF_STRING, Clear_Screen, L"Clear Screen");
     SetMenu(hwnd, hmenu);
 
@@ -105,24 +105,76 @@ void LoadFile(HWND hwnd) {
 }
 
 /// Choose Color from pallet "e. Give me option to choose shape color before drawing from menu"
+void FillScreen(int xs, int xe, int ys, int ye, GLfloat *C) {
+
+    glBegin(GL_POINTS);
+    glColor3f(C[0], C[1], C[2]);
+
+    for (int i = ys; i < ye; i++) {
+        for (int j = xs; j < xe; j++) {
+            glVertex2d(j, i);
+        }
+    }
+
+    glEnd();
+    glFlush();
+}
+
 #define SHOW_TOOLS 101
 
-const int palletX = 5;
-const int palletY = 5;
-const int palletWidth = 40;
-const int palletHigth = 40;
+const int palletX = 10;
+const int palletY = 6;
+const int palletWidth = 45;
+const int palletHigth = 45;
 const int NpalletWidth = 6;
 const int NpalletHigth = 2;
 const int stepright = palletWidth + 10;
-const int stepdown = palletHigth + 10;
+const int stepdown = palletHigth + 5;
+const int toolsHigth = 100;
+GLfloat toolsLine[] = {0.5111f, 0.5111f, 0.5111f};
+GLfloat toolsBKColor[] = {0.89f, 0.89f, 0.89f};
+GLfloat Colors[NpalletWidth * NpalletHigth][3] = {{1.0f, 0,    0},      // Red
+                                                  {0,    1.0f, 0},      // Green
+                                                  {0,    0,    1.0f},   // Blue
+                                                  {1.0f, 1.0,    0},    // Yellow
+                                                  {0,    1.0f, 1.0f},   // Cyan
+                                                  {0,    0,    1.0f},
+                                                  {1.0f, 0,    0},
+                                                  {0,    1.0f, 0},
+                                                  {0,    0,    1.0f},
+                                                  {1.0f, 0,    0},
+                                                  {0,    1.0f, 0},
+                                                  {0,    0,    1.0f},};
+vector<vector<int>> toolsButton;
 
-void AddColorPalletWindow(HWND hwnd) {
-    for (int y = palletY; y - palletY < NpalletHigth; y++) {
-        for (int x = palletX; x - palletX < NpalletWidth; x++) {
+void drawBlock(int x1, int y1, int x3, int y3, GLfloat *c) {
+    FillRectangleWithHermite(x1, y1, x3, y3, c);
+    toolsButton.push_back({x1, x3, y1, y3});
+}
+
+int choosetool(int x, int y) {
+    int i = 0;
+    while (i < toolsButton.size() &&
+           !(toolsButton[i][0] < x && toolsButton[i][1] > x && toolsButton[i][2] < y && toolsButton[i][3] > y)) {
+        i++;
+    }
+    cout << i << '\n';
+    cout.flush();
+    return i;
+}
+
+void addToolsSction() {
+
+    FillScreen(0, screenWidth, 0, toolsHigth, toolsBKColor);
+    drawLine(0, toolsHigth, screenWidth, toolsHigth, toolsLine);
+    int i = 0;
+    for (int y = 0; y < NpalletHigth; y++) {
+        for (int x = 0; x < NpalletWidth; x++) {
 
             // TODO Choose color for each button
-            drawRectangle(x * stepright, y * stepdown, x * stepright + palletWidth, y * stepdown + palletHigth,
-                          drawingColor);
+            drawBlock(palletX + x * stepright, palletY + y * stepdown, x * stepright + palletWidth,
+                      y * stepdown + palletHigth,
+                      Colors[i++]);
 
         }
     }
@@ -137,25 +189,11 @@ void getColor(LPARAM lp) {
     MessageBeep(MB_ICONASTERISK);
 }
 
-
 /// clear screen "f. Implement item to clear screen from shapes"
 void clearScreen() {
-    glBegin(GL_POINTS);
-
-
     /// global background color
-    glColor3f(backgroundColor[0], backgroundColor[1], backgroundColor[2]);
-
-    for (int i = 0; i < screenHeight; i++) {
-        for (int j = 0; j < screenWidth; j++) {
-            glVertex2d(j, i);
-        }
-    }
-
+    FillScreen(0, screenWidth, toolsHigth + 1, screenHeight, backgroundColor);
     cout << "Screen Cleared\n";
-    glEnd();
-    glFlush();
-
     MessageBeep(MB_ICONASTERISK);
 }
 
@@ -165,8 +203,8 @@ HGLRC InitOpenGl(HDC hdc) {
             sizeof(PIXELFORMATDESCRIPTOR),   // size of this pfd
             1,                     // version number
             PFD_DRAW_TO_WINDOW |   // support window
-            PFD_SUPPORT_OPENGL |   // support OpenGL
-            PFD_DOUBLEBUFFER,      // double buffered
+            PFD_SUPPORT_OPENGL,  // support OpenGL
+//            PFD_DOUBLEBUFFER,      // double buffered
             PFD_TYPE_RGBA,         // RGBA type
             24,                    // 24-bit color depth
             0, 0, 0, 0, 0, 0,      // color bits ignored
@@ -192,7 +230,7 @@ HGLRC InitOpenGl(HDC hdc) {
 void AdjustWindowFor2D(HDC hdc, int w, int h) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(0, w, 0, h);
+    gluOrtho2D(0, w, h, 0);
     glMatrixMode(GL_MODELVIEW);
     glViewport(0, 0, w, h);
     glClearColor(0, 0, 0, 0);
@@ -217,11 +255,9 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                     break;
                 case Load_File:
                     LoadFile(hwnd);
-                    glFlush();
                     break;
                 case Clear_Screen:
                     clearScreen();
-                    glFlush();
                     MessageBeep(MB_ICONASTERISK);
                     break;
             }
@@ -237,18 +273,16 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
         case SHOW_TOOLS:
 
             // TODO create the tools section of every thing
-            glFlush();
-
-            cout << "worknig lol";
+            cout << "Tools Loaded\n";
             cout.flush();
+            addToolsSction();
 
             break;
         case WM_SIZE:
             AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));
             break;
         case WM_LBUTTONDOWN:
-
-            glFlush();
+            choosetool(LOWORD(lp), HIWORD(lp));
 
             break;
         case WM_CLOSE:
