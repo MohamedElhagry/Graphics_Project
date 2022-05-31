@@ -323,6 +323,9 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
         case SHOW_TOOLS:
 
             // TODO create the tools section of every thing
+          //  String s;
+
+
             cout << "Tools Loaded\n";
             cout.flush();
             addToolsSction();
