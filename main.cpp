@@ -7,8 +7,10 @@
 #include "DrawSimpleShapes.h"
 #include "hermitFilling.h"
 #include "fillingQuarter.h"
-#include <string>
-#include <cstring>
+#include "convex.h"
+#include "nonConvex.h"
+#include "bezierFilling.h"
+#include "Filling Utilities.h"
 
 #pragma comment(lib, "opengl32")
 #pragma comment(lib, "glu32")
@@ -20,9 +22,9 @@ using namespace std;
 const int toolsHigth = 100;
 const int screenWidth = 800;
 const int screenHeight = 600 - toolsHigth;
-bool defaultAlgorithms = 0;
 GLfloat drawingColor[] = {1.0f, 1.0f, 0.0f};
-GLfloat backgroundColor[] = {1.0f, 1.0f, 1.0f};
+RECT currColor = {340, 10, 380, 50};
+GLfloat backgroundColor[] = {1.0f, 1.0f, 0.0f};
 
 /// create menu
 HMENU hmenu;
@@ -30,6 +32,8 @@ HMENU hmenu;
 #define Load_File 2
 #define Clear_Screen 454
 #define Default 222
+#define WHITE_BK 11111
+
 void AddMenu(HWND hwnd) {
     hmenu = CreateMenu();
     HMENU FileMenu = CreateMenu();
@@ -43,6 +47,7 @@ void AddMenu(HWND hwnd) {
 
     AppendMenuW(ToolsMenu, MF_STRING, Clear_Screen, L"Clear Screen");
     AppendMenuW(ToolsMenu, MF_STRING, Default, L"Default Algorithms");
+    AppendMenuW(ToolsMenu, MF_STRING, WHITE_BK, L"White Background");
 
     SetMenu(hwnd, hmenu);
 
@@ -140,25 +145,27 @@ const int NpalletWidth = 6;
 const int NpalletHigth = 2;
 const int stepright = palletWidth + 10;
 const int stepdown = palletHigth + 5;
-GLfloat toolsShading[] = {0.62f, 0.62f, 0.62f};
+GLfloat toolsShading[] = {0.75f, 0.75f, 0.75f};
 GLfloat toolsBKColor[] = {0.97f, 0.97f, 0.97f};
-GLfloat Colors[NpalletWidth * NpalletHigth][3] = {{1.0f, 0,    0},      // Red
-                                                  {0,    1.0f, 0},      // Green
-                                                  {0,    0,    1.0f},   // Blue
-                                                  {1.0f, 1.0,  0},    // Yellow
-                                                  {0,    1.0f, 1.0f},   // Cyan
-                                                  {0,    0,    0},
-                                                  {0,    0,    0},
-                                                  {0,    0,    0},
-                                                  {0,    0,    0},
-                                                  {0,    0,    0},
-                                                  {0,    0,    0},
-                                                  {0,    0,    0}};
+GLfloat Colors[NpalletWidth * NpalletHigth][3] = {{1.0f, 0,     0},
+                                                  {0,    1.0f,  0},
+                                                  {0,    0,     1.0f},
+                                                  {1.0f, 1.0,   0},
+                                                  {0,    1.0f,  1.0f},
+                                                  {0.44, 0.3,   0.1},
+                                                  {0.6,  0.8,   0.9},
+                                                  {0.22, 0.13,  0.67},
+                                                  {0.86, 0.766, 0.43},
+                                                  {0.1,  0.8,   0},
+                                                  {0,    0.66,  0.5},
+                                                  {0.22, 0.11,  0.65}};
 vector<vector<int>> colorButtons;
 
 void drawBlock(int x1, int y1, int x3, int y3, vector<vector<int>> &buttons, GLfloat *c) {
     FillRectangleWithHermite(x1, y1, x3, y3, c);
-    drawRectangle(x1, y1, x3, y3, toolsShading);
+    for (int i = 1; i < 3; i++) {
+        drawRectangle(x1 - i, y1 - i, x3 + i, y3 + i, toolsShading);
+    }
     buttons.push_back({x1, x3, y1, y3});
 }
 
@@ -192,16 +199,20 @@ const int shapesX = 400;
 const int shapesY = 6;
 const int shapesWidth = 70;
 const int shapesHigth = 40;
-const int NshapesWidth = 4;
+const int NshapesWidth = 5;
 const int NshapesHigth = 2;
 const int shapesright = shapesWidth + 10;
 const int shapesdown = shapesHigth + 5;
-const LPCTSTR shapes[] = {reinterpret_cast<LPCTSTR const>(L"Line"), reinterpret_cast<LPCTSTR const>(L"Square"),
-                          reinterpret_cast<LPCTSTR const>(L"Rectangle"),
-                          reinterpret_cast<LPCTSTR const>(L"Ellipse"), reinterpret_cast<LPCTSTR const>(L"Circle"),
-                          reinterpret_cast<LPCTSTR const>(L"Fill Circle"), reinterpret_cast<LPCTSTR const>(L"Fill"),
-                          reinterpret_cast<LPCTSTR const>(L"FloodFill"), reinterpret_cast<LPCTSTR const>(L"Curve"),
-                          reinterpret_cast<LPCTSTR const>(L"Clip")};
+const int shapesNum = 10;
+const LPCTSTR shapes[shapesNum] = {reinterpret_cast<LPCTSTR const>(L"Line"), reinterpret_cast<LPCTSTR const>(L"Square"),
+                                   reinterpret_cast<LPCTSTR const>(L"Rectangle"),
+                                   reinterpret_cast<LPCTSTR const>(L"Ellipse"),
+                                   reinterpret_cast<LPCTSTR const>(L"Circle"),
+                                   reinterpret_cast<LPCTSTR const>(L"Fill Circle"),
+                                   reinterpret_cast<LPCTSTR const>(L"Fill"),
+                                   reinterpret_cast<LPCTSTR const>(L"FloodFill"),
+                                   reinterpret_cast<LPCTSTR const>(L"Curve"),
+                                   reinterpret_cast<LPCTSTR const>(L"Clip")};
 vector<vector<int>> shapeBounds;
 
 void addShapesButtons(HWND hwnd) {
@@ -213,19 +224,17 @@ void addShapesButtons(HWND hwnd) {
                           shapesX + x * shapesright, shapesY + y * shapesdown, shapesWidth,
                           shapesHigth, hwnd, (HMENU) Shape_choice, NULL,
                           NULL);
-            shapeBounds.push_back({shapesX + x * shapesright, shapesY + y * shapesdown, x * shapesright + shapesWidth,
-                                   y * shapesdown + shapesHigth});
+            shapeBounds.push_back(
+                    {shapesX + x * shapesright, shapesY + y * shapesdown, (shapesX + x * shapesright) + shapesWidth,
+                     (shapesY + y * shapesdown) + shapesHigth});
             i++;
         }
     }
-    y--;
-    CreateWindowW(L"BUTTON", reinterpret_cast<LPCWSTR>(shapes[i]),
-                  WS_VISIBLE | WS_CHILD,
-                  shapesX + x * shapesright, shapesY + y * shapesdown, shapesWidth,
-                  shapesHigth, hwnd, (HMENU) Shape_choice, NULL,
-                  NULL);
-    shapeBounds.push_back({shapesX + x * shapesright, shapesY + y * shapesdown, x * shapesright + shapesWidth,
-                           y * shapesdown + shapesHigth});
+
+    FillRectangleWithHermite(currColor.left, currColor.top, currColor.right, currColor.bottom, drawingColor);
+    for (int i = 1; i < 5; i++) {
+        drawRectangle(currColor.left - i, currColor.top - i, currColor.right + i, currColor.bottom + i, toolsShading);
+    }
 }
 
 void getColor(LPARAM lp) {
@@ -245,6 +254,10 @@ void clearScreen() {
     MessageBeep(MB_ICONASTERISK);
 }
 
+void changeBackground(HWND hwnd, int r, int g, int b) {
+    HBRUSH brush = CreateSolidBrush(RGB(r, g, b));
+    SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG_PTR) brush);
+}
 
 HGLRC InitOpenGl(HDC hdc) {
     PIXELFORMATDESCRIPTOR pfd = {
@@ -308,6 +321,103 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                     clearScreen();
                     MessageBeep(MB_ICONASTERISK);
                     break;
+                case WHITE_BK:
+                    changeBackground(hwnd, 255, 255, 255);
+                    break;
+                case Shape_choice:
+                    cout << "shapes\n";
+                    cout.flush();
+                    x = LOWORD(lp), y = HIWORD(lp);
+                    choice = chooseTool(x, y, shapeBounds);
+                    cout << chooseTool(x, y, shapeBounds) << '\n';
+                    switch (choice) {
+                        case 0 :        /// Line
+                            inProcess = true;
+                            cout << "Please choose the algorithm to draw your Line\n";
+                            cout << "1-DDA, 2-MidPoint, 3-parametric\n";
+                            cin >> choice2;
+
+                            target = 2;
+                            cout << "Please click on two points for the line\n";
+                            break;
+                        case 1:       /// Square
+                            inProcess = true;
+
+                            target = 2;
+                            cout << "Please click on two points for the square\n";
+                            break;
+                        case 2:     /// Rectangle
+                            inProcess = true;
+
+                            target = 2;
+                            cout << "Please click on two points for the rectangle\n";
+                            break;
+                        case 3:     /// Ellipse
+                            inProcess = true;
+                            cout << "Please choose the algorithm to draw your Ellipse\n";
+                            cout << "1-Direct, 2-Polar, 3-MidPoint\n";
+                            cin >> choice2;
+
+                            target = 3;
+                            cout << "Please click on three points for the ellipse\n";
+                            break;
+                        case 4:     /// Circle
+                            inProcess = true;
+                            cout << "Please choose the algorithm to draw your Circle\n";
+                            cout << "1-Direct, 2-Polar, 3- Iterative polar, 4-Midpoint, 5-Modified Midpoint\n";
+                            cin >> choice2;
+
+                            target = 2;
+                            cout << "Please click on two points for the circle\n";
+                            break;
+                        case 5:     /// Fill Circle
+                            inProcess = true;
+                            cout << "Please choose wether you want to fill the circle with lines or circles\n";
+                            cout << "1-With lines, 2-With Circles\n";
+
+                            cin >> choice2;
+
+                            target = 0;
+                            break;
+                        case 6:     /// Convex and Non Convex Filling
+                            inProcess = true;
+                            cout << "Please choose the algorithm to fill your polygon\n";
+
+                            cin >> choice2;
+                            break;
+                        case 7:     /// FloodFill
+                            inProcess = true;
+                            cout << "Please click on a point to start the floodfill\n";
+
+                            break;
+                        case 8:     /// Curve
+                            inProcess = true;
+                            cout << "Please choose the algorithm to draw your spline\n";
+
+                            cout << "Please click on two points for the line\n";
+                            break;
+                        case 9:     /// Clip
+                            inProcess = true;
+                            cout << "Please choose the type of clipping window\n";
+                            cout << "1 - Rectangular,2 - square, 3 -circle\n";
+                            cin >> choice2;
+
+                            target = 2;
+                            break;
+                        default:
+                            target = 0;
+                            break;
+                    }
+                    cout.flush();
+                    break;
+                case Default:
+
+                    if (defaultAlgorithms == 0)
+                        defaultAlgorithms = 1;
+                    else
+                        defaultAlgorithms = 0;
+                    break;
+                    /// add shapes drawing here
             }
             break;
         case WM_CREATE:
@@ -316,27 +426,175 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
 
             // add menu
             AddMenu(hwnd);
-
-            // add shapes
-//            addShapesButtons(hwnd);
             break;
         case SHOW_TOOLS:
 
             // TODO create the tools section of every thing
-          //  String s;
-
-
-            cout << "Tools Loaded\n";
-            cout.flush();
+            //  String s;
             addToolsSction();
+            // add shapes
             addShapesButtons(hwnd);
             break;
         case WM_SIZE:
             AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));
             break;
         case WM_LBUTTONDOWN:
-//            chooseTool(LOWORD(lp), HIWORD(lp));
+            x = LOWORD(lp), y = HIWORD(lp);
+            if (y < toolsHigth) {
+                int choice = chooseTool(x, y, colorButtons);
+                if (choice < colorButtons.size()) {
+                    drawingColor[0] = Colors[choice][0];
+                    drawingColor[1] = Colors[choice][1];
+                    drawingColor[2] = Colors[choice][2];
+                    FillRectangleWithHermite(currColor.top, currColor.left, currColor.right, currColor.bottom,
+                                             drawingColor);
+                }
+            } else {
+                if (inProcess) {
+                    points[counter++] = Point(x, y);
 
+                    if (counter == target) {
+                        counter = 0;
+                        inProcess = false;
+
+                        switch (choice) {
+                            case 0 :        /// Line
+                                inProcess = false;
+                                //"1-DDA, 2-MidPoint, 3-parametric\n";
+
+                                if (choice2 == 1) {
+                                    drawLineDDA(points[0].x, points[0].y, points[1].x, points[1].y, drawingColor);
+                                } else if (choice == 2) {
+                                    drawLineMidPoint(points[0].x, points[0].y, points[1].x, points[1].y, drawingColor);
+                                } else if (choice == 3) {
+                                    drawLineParametric(points[0].x, points[0].y, points[1].x, points[1].y,
+                                                       drawingColor);
+                                }
+                                break;
+                            case 1:       /// Square
+
+
+                                drawRectangle(points[0].x, points[0].y, points[1].x, points[1].y, drawingColor);
+                                break;
+                            case 2:     /// Rectangle
+
+
+                                drawRectangle(points[0].x, points[0].y, points[1].x, points[1].y, drawingColor);
+                                break;
+                            case 3:     /// Ellipse
+
+                                //"1-Direct, 2-Polar, 3-MidPoint\n";
+                                R = (points[1].x - points[0].x) * (points[1].x - points[0].x) +
+                                    (points[1].y - points[0].y) * (points[1].y - points[0].y);
+                                B = (points[2].x - points[0].x) * (points[2].x - points[0].x) +
+                                    (points[2].y - points[0].y) * (points[2].y - points[0].y);;
+                                if (choice2 == 1) {
+                                    //drawEllipse(points[0].x, points[0].y, points[1].x, points[1].y, drawingColor);
+                                } else if (choice == 2) {
+                                    drawEllipsePolar(points[0].x, points[0].y, A, B, drawingColor);
+                                } else if (choice == 3) {
+                                    drawEllipseMidPoint(points[0].x, points[0].y, A, B, drawingColor);
+                                } else {
+                                    drawEllipsePolar(points[0].x, points[0].y, A, B, drawingColor);
+                                }
+
+                                break;
+                            case 4:     /// Circle
+
+
+                                //"1-Direct, 2-Polar, 3- Iterative polar, 4-Midpoint, 5-Modified Midpoint";
+                                R = (points[1].x - points[0].x) * (points[1].x - points[0].x) +
+                                    (points[1].y - points[0].y) * (points[1].y - points[0].y);
+                                if (choice2 == 1) {
+                                    drawCircle(points[0].x, points[0].y, R, drawingColor);
+                                } else if (choice2 == 2) {
+                                    drawCirclePolar(points[0].x, points[0].y, R, drawingColor);
+                                } else if (choice2 == 3) {
+                                    drawCirclePolarIterative(points[0].x, points[0].y, R, drawingColor);
+                                } else if (choice2 == 4) {
+                                    drawCircleMidPoint(points[0].x, points[0].y, R, drawingColor);
+                                } else if (choice == 5) {
+                                    drawCircleMidPointModified(points[0].x, points[0].y, R, drawingColor);
+                                } else {
+                                    drawCircle(points[0].x, points[0].y, R, drawingColor);
+                                }
+
+                                break;
+                            case 5:     /// Fill Circle
+
+                                //"1-With lines, 2-With Circles\n";
+                                R = (points[1].x - points[0].x) * (points[1].x - points[0].x) +
+                                    (points[1].y - points[0].y) * (points[1].y - points[0].y);
+                                if (choice2 == 1) {
+                                    FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
+                                } else if (choice2 == 2) {
+
+                                } else {
+                                    FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
+                                }
+                                target = 0;
+                                break;
+                            case 6:     /// Convex and Non Convex Filling
+
+                                cout << "1-Convex polygon filling, 2-general polygon filling\n";
+                                R = (points[1].x - points[0].x) * (points[1].x - points[0].x) +
+                                    (points[1].y - points[0].y) * (points[1].y - points[0].y);
+                                if (choice2 == 1) {
+                                    FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
+                                } else if (choice2 == 2) {
+
+                                } else {
+                                    FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
+                                }
+
+                                break;
+                            case 7:     /// FloodFill
+
+                                cout << "Please click on a point to start the floodfill\n";
+                                //"1-With lines, 2-With Circles\n";
+                                R = (points[1].x - points[0].x) * (points[1].x - points[0].x) +
+                                    (points[1].y - points[0].y) * (points[1].y - points[0].y);
+                                if (choice2 == 1) {
+                                    FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
+                                } else if (choice2 == 2) {
+
+                                } else {
+                                    FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
+                                }
+                                break;
+                            case 8:     /// Curve
+
+                                cout << "Please choose the algorithm to draw your spline\n";
+                                R = (points[1].x - points[0].x) * (points[1].x - points[0].x) +
+                                    (points[1].y - points[0].y) * (points[1].y - points[0].y);
+                                if (choice2 == 1) {
+                                    FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
+                                } else if (choice2 == 2) {
+
+                                } else {
+                                    FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
+                                }
+                                break;
+                            case 9:     /// Clip
+                                //"1-With lines, 2-With Circles\n";
+                                R = (points[1].x - points[0].x) * (points[1].x - points[0].x) +
+                                    (points[1].y - points[0].y) * (points[1].y - points[0].y);
+                                if (choice2 == 1) {
+                                    FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
+                                } else if (choice2 == 2) {
+
+                                } else {
+                                    FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
+                                }
+                                break;
+                            default:
+                                target = 0;
+                                break;
+                        }
+
+                    }
+                }
+            }
             break;
         case WM_CLOSE:
             DestroyWindow(hwnd);
@@ -349,6 +607,7 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
         default:
             return DefWindowProc(hwnd, mcode, wp, lp);
     }
+
     return 0;
 }
 
