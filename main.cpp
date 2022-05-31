@@ -3,9 +3,12 @@
 #include <gl\GLu.h>
 #include <math.h>
 #include <iostream>
+#include <vector>
 #include <fstream>
+#include "DrawSimpleShapes.h"
+#include "hermitFilling.h"
+#include "fillingQuarter.h"
 
-#include "Draw Simple Shapes.cpp"
 
 #pragma comment(lib, "opengl32")
 #pragma comment(lib, "glu32")
@@ -137,7 +140,7 @@ GLfloat Colors[NpalletWidth * NpalletHigth][3] = {{1.0f, 0,    0},      // Red
                                                   {0,    1.0f, 0},      // Green
                                                   {0,    0,    1.0f},   // Blue
                                                   {1.0f, 1.0,    0},    // Yellow
-                                                  {0,    1.0f, 1.0f},   // Cyan
+                                                  {0,    1.0f, 0},
                                                   {0,    0,    1.0f},
                                                   {1.0f, 0,    0},
                                                   {0,    1.0f, 0},

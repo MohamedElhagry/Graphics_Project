@@ -3,5 +3,5 @@ project(Graphics_Project)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(Graphics_Project main.cpp "Draw Simple Shapes.h")
+add_executable(Graphics_Project main.cpp DrawSimpleShapes.h fillingQuarter.h hermitFilling.h nonConvex.h convex.h "Clipping algorithms.h")
 target_link_libraries(Graphics_Project -lOpenGL32  -lGLU32)
