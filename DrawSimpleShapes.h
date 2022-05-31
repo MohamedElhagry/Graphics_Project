@@ -434,4 +434,43 @@ inline void drawRectangle(int x1, int y1, int x3, int y3, GLfloat *c) {
     drawLine(x4, y4, x1, y1, c);
 }
 
+inline void
+DrawHermiteCurvee(Point p1, Point T1, Point p2, Point T2, GLfloat *drawingColor, GLfloat *pDouble, double d, int i,
+                  int i1)
+{
+    glBegin(GL_POINTS);
+    glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
+    double a0 = p1.x,
+            a1 = T1.x,
+            a2 = -3 * p1.x - 2 * T1.x + 3 * p2.x - T2.x,
+            a3 = 2 * p1.x + T1.x - 2 * p2.x + T2.x;
+    double b0 = p1.y,
+            b1 = T1.y,
+            b2 = -3 * p1.y - 2 * T1.y + 3 * p2.y - T2.y,
+            b3 = 2 * p1.y + T1.y - 2 * p2.y + T2.y;
+    for (double t = 0; t <= 1; t += 0.001)
+    {
+        double t2 = t * t, t3 = t2 * t;
+        double x = a0 + a1 * t + a2 * t2 + a3 * t3;
+        double y = b0 + b1 * t + b2 * t2 + b3 * t3;
+        glVertex2d(round(x), round(y));
+    }
+    glEnd();
+    glFlush();
+}
+
+inline void CardinalSplines(Vector Points[], int n, double c, GLfloat *c1, GLfloat *c2, double R, int xc, int yc) {
+    Point slopes[n];
+    for (int i = 1; i < n - 1; i++) {
+        slopes[i] = (Points[i + 1] - Points[i - 1]) * (c / 2);
+    }
+
+    slopes[0] = (Points[1] - Points[0]) * (c / 2);
+    slopes[n - 1] = (Points[n - 1] - Points[n - 2]) * (c / 2);
+
+    for (int i = 0; i < n - 1; i++) {
+        DrawHermiteCurvee(Points[i], slopes[i], Points[i + 1], slopes[i + 1], c1, R, xc, yc);
+    }
+}
+
 #endif //GRAPHICS_PROJECT_DRAWSIMPLESHAPES_H
