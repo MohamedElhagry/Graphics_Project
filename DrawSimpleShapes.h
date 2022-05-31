@@ -14,6 +14,7 @@
 #pragma comment(lib, "glu32")
 
 #include <gl\GLu.h>
+#include <stack>
 
 struct Point {
     int x, y;
@@ -40,7 +41,7 @@ struct Vector {
         return Vector(this->v[0] - v2[0], this->v[1] - v2[1]);
     }
 
-    Point operator (double multiplicand) {
+    Vector operator * (double multiplicand) {
         return Vector(this->v[0] * multiplicand, this->v[1] * multiplicand);
     }
 
@@ -434,20 +435,18 @@ inline void drawRectangle(int x1, int y1, int x3, int y3, GLfloat *c) {
     drawLine(x4, y4, x1, y1, c);
 }
 
-inline void
-DrawHermiteCurvee(Point p1, Point T1, Point p2, Point T2, GLfloat *drawingColor, GLfloat *pDouble, double d, int i,
-                  int i1)
+inline void DrawHermiteCurve(Vector p1, Vector T1, Vector p2, Vector T2, GLfloat *drawingColor)
 {
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
-    double a0 = p1.x,
-            a1 = T1.x,
-            a2 = -3 * p1.x - 2 * T1.x + 3 * p2.x - T2.x,
-            a3 = 2 * p1.x + T1.x - 2 * p2.x + T2.x;
-    double b0 = p1.y,
-            b1 = T1.y,
-            b2 = -3 * p1.y - 2 * T1.y + 3 * p2.y - T2.y,
-            b3 = 2 * p1.y + T1.y - 2 * p2.y + T2.y;
+    double a0 = p1[0],
+            a1 = T1[0],
+            a2 = -3 * p1[0] - 2 * T1[0] + 3 * p2[0] - T2[0],
+            a3 = 2 * p1[0] + T1[0] - 2 * p2[0] + T2[0];
+    double b0 = p1[1],
+            b1 = T1[1],
+            b2 = -3 * p1[1] - 2 * T1[1] + 3 * p2[1] - T2[1],
+            b3 = 2 * p1[1] + T1[1] - 2 * p2[1] + T2[1];
     for (double t = 0; t <= 1; t += 0.001)
     {
         double t2 = t * t, t3 = t2 * t;
@@ -459,8 +458,8 @@ DrawHermiteCurvee(Point p1, Point T1, Point p2, Point T2, GLfloat *drawingColor,
     glFlush();
 }
 
-inline void CardinalSplines(Vector Points[], int n, double c, GLfloat *c1, GLfloat *c2, double R, int xc, int yc) {
-    Point slopes[n];
+inline void CardinalSplines(Vector Points[], int n, double c, GLfloat *drawingColor) {
+    Vector slopes[n];
     for (int i = 1; i < n - 1; i++) {
         slopes[i] = (Points[i + 1] - Points[i - 1]) * (c / 2);
     }
@@ -469,7 +468,86 @@ inline void CardinalSplines(Vector Points[], int n, double c, GLfloat *c1, GLflo
     slopes[n - 1] = (Points[n - 1] - Points[n - 2]) * (c / 2);
 
     for (int i = 0; i < n - 1; i++) {
-        DrawHermiteCurvee(Points[i], slopes[i], Points[i + 1], slopes[i + 1], c1, R, xc, yc);
+        DrawHermiteCurve(Points[i], slopes[i], Points[i + 1], slopes[i + 1], drawingColor);
+    }
+}
+
+void RecursiveFloodFill(HDC hdc, int x, int y, COLORREF boundaryColor, COLORREF fillColor)
+{
+    COLORREF c = GetPixel(hdc, x, y);
+    if (c == boundaryColor || c == fillColor)
+        return;
+    SetPixel(hdc, x, y, fillColor);
+    RecursiveFloodFill(hdc, x + 1, y, boundaryColor, fillColor);
+    RecursiveFloodFill(hdc, x - 1, y, boundaryColor, fillColor);
+    RecursiveFloodFill(hdc, x, y + 1, boundaryColor, fillColor);
+    RecursiveFloodFill(hdc, x, y - 1, boundaryColor, fillColor);
+}
+
+void IterativeFloodFill(HDC hdc, int x, int y, COLORREF boundaryColor, COLORREF fillColor)
+{
+    std::stack<Point> stk;
+    stk.emplace(Point(x, y));
+    while (!stk.empty())
+    {
+        auto p = stk.top(); stk.pop();
+        COLORREF c = GetPixel(hdc, p.x, p.y);
+        if (c == boundaryColor || c == fillColor)
+            continue;
+        SetPixel(hdc, p.x, p.y, fillColor);
+        stk.emplace(Point(p.x + 1, p.y));
+        stk.emplace(Point(p.x - 1, p.y));
+        stk.emplace(Point(p.x, p.y + 1));
+        stk.emplace(Point(p.x, p.y - 1));
+    }
+}
+
+void Draw2Points(HDC hdc, int xc, int yc, int x, int y, COLORREF c, int quarter)
+{
+    switch (quarter)
+    {
+        case 1:
+            SetPixel(hdc, xc + x, yc + y, c);
+            SetPixel(hdc, xc + y, yc + x, c);
+            break;
+        case 2:
+            SetPixel(hdc, xc + x, yc - y, c);
+            SetPixel(hdc, xc + y, yc - x, c);
+            break;
+        case 3:
+            SetPixel(hdc, xc - x, yc - y, c);
+            SetPixel(hdc, xc - y, yc - x, c);
+            break;
+        case 4:
+            SetPixel(hdc, xc - x, yc + y, c);
+            SetPixel(hdc, xc - y, yc + x, c);
+            break;
+    }
+}
+
+void FillQuarterWithCircle(HDC hdc, int xc, int yc, int R, COLORREF c, int quarter)
+{
+    for (int r = 0; r <= R; r++)
+    {
+        int x = 0, y = r;
+        int d = 1 - r, d1 = 3, d2 = 5 - 2 * r;
+        do {
+            Draw2Points(hdc, xc, yc, x, y, c, quarter);
+            if (d < 0)
+            {
+                d += d1;
+                d2 += 2;
+            }
+            else
+            {
+                d += d2;
+                d2 += 4;
+                y--;
+            }
+            d1 += 2;
+            x++;
+
+        } while (x < y);
     }
 }
 
