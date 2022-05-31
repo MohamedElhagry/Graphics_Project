@@ -1,16 +1,5 @@
 #include <Windows.h>
-#include <bits/stdc++.h>
-using namespace std;
-
-struct Point {
-    int x, y;
-
-    Point(int x = 0, int y = 0)
-    {
-        this->x = x;
-        this->y = y;
-    }
-};
+#include "Draw Simple Shapes.cpp"
 
 void DrawHermiteCurve(HDC hdc, Point p1, Point T1, Point p2, Point T2, COLORREF color)
 {

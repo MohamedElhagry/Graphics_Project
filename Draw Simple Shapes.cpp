@@ -2,6 +2,23 @@
 // Created by Mohamed on 5/27/2022.
 //
 
+#include <gl\GLu.h>
+#pragma comment(lib, "opengl32")
+#pragma comment(lib, "glu32")
+#include <math.h>
+#define DrawSimpleShapes
+
+using namespace std;
+
+struct Point {
+    int x, y;
+
+    Point(int x = 0, int y = 0)
+    {
+        this->x = x;
+        this->y = y;
+    }
+};
 
 void swap(int &x1, int &y1, int &x2, int &y2) {
     int tmp = x1;

@@ -1,109 +1,31 @@
-#include <Windows.h>
-#include <bits/stdc++.h>
-using namespace std;
+#ifndef DrawSimpleShapes
+#include "Draw Simple Shapes.cpp"
+#endif
 
-struct Point {
-    int x, y;
-
-    Point(int x = 0, int y = 0)
-    {
-        this->x = x;
-        this->y = y;
-    }
-};
-
-void DrawLine(HDC hdc, int x1, int y1, int x2, int y2, COLORREF c)
+void draw2Lines(int xc, int yc, int x, int y, GLfloat * drawingColor, int quarter)
 {
-    int dx = x2 - x1;
-    int dy = y2 - y1;
-    if (abs(dy) <= abs(dx))
-    {
-        if (x1 > x2)
-            swap(x1, x2), swap(y1, y2);
-        SetPixel(hdc, x1, y1, c);
-        int x = x1;
-        while (x < x2)
-        {
-            x++;
-            double y = y1 + (double)(x - x1) * dy / dx;
-            SetPixel(hdc, x, round(y), c);
-        }
-    }
-    else
-    {
-        if (y1 > y2)
-            swap(x1, x2), swap(y1, y2);
-        SetPixel(hdc, x1, y1, c);
-        int y = y1;
-        while (y < y2)
-        {
-            y++;
-            double x = x1 + (double)(y - y1) * dx / dy;
-            SetPixel(hdc, round(x), y, c);
-        }
-    }
-}
-
-void Draw8Points(HDC hdc, int xc, int yc, int x, int y, COLORREF c)
-{
-    SetPixel(hdc, xc + x, yc + y, c);
-    SetPixel(hdc, xc + x, yc - y, c);
-    SetPixel(hdc, xc - x, yc + y, c);
-    SetPixel(hdc, xc - x, yc - y, c);
-    SetPixel(hdc, xc + y, yc + x, c);
-    SetPixel(hdc, xc + y, yc - x, c);
-    SetPixel(hdc, xc - y, yc + x, c);
-    SetPixel(hdc, xc - y, yc - x, c);
-}
-
-void Draw2Lines(HDC hdc, int xc, int yc, int x, int y, COLORREF c, int quarter)
-{
-    cout << quarter << endl;
     switch (quarter)
     {
         case 1:
-            DrawLine(hdc, xc, yc, xc + x, yc + y, c);
-            DrawLine(hdc, xc, yc, xc + y, yc + x, c);
+            drawLine( xc, yc, xc + x, yc + y, drawingColor);
+            drawLine( xc, yc, xc + y, yc + x, drawingColor);
             break;
         case 2:
-            DrawLine(hdc, xc, yc, xc + x, yc - y, c);
-            DrawLine(hdc, xc, yc, xc + y, yc - x, c);
+            drawLine( xc, yc, xc + x, yc - y, drawingColor);
+            drawLine( xc, yc, xc + y, yc - x, drawingColor);
             break;
         case 3:
-            DrawLine(hdc, xc, yc, xc - y, yc - x, c);
-            DrawLine(hdc, xc, yc, xc - x, yc - y, c);
+            drawLine( xc, yc, xc - y, yc - x, drawingColor);
+            drawLine( xc, yc, xc - x, yc - y, drawingColor);
             break;
         case 4:
-            DrawLine(hdc, xc, yc, xc - y, yc + x, c);
-            DrawLine(hdc, xc, yc, xc - x, yc + y, c);
+            drawLine( xc, yc, xc - y, yc + x, drawingColor);
+            drawLine( xc, yc, xc - x, yc + y, drawingColor);
             break;
     }
 }
 
-void DrawCircle(HDC hdc, int xc, int yc, int R, COLORREF c)
-{
-    int x = 0, y = R;
-    int d = 1 - R, d1 = 3, d2 = 5 - 2 * R;
-    do {
-        Draw8Points(hdc, xc, yc, x, y, c);
-        if (d < 0)
-        {
-            d += d1;
-            d2 += 2;
-        }
-        else
-        {
-            d += d2;
-            d2 += 4;
-            y--;
-        }
-        d1 += 2;
-        x++;
-
-    } while (x < y);
-}
-
-void FillQuarter(HDC hdc, int xc, int yc, int R, COLORREF c, int quarter)
+void FillQuarter(int xc, int yc, int R, GLfloat *drawingColor, int quarter)
 {
     int x = 0, y = R;
     int d = 1 - R, d1 = 3, d2 = 5 - 2 * R;

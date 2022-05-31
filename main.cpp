@@ -213,18 +213,15 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
         case WM_COMMAND:
             switch (wp) {
                 case Save_File:
-                    SwapBuffers(hdc);
                     SaveFile(hwnd);
                     break;
                 case Load_File:
                     LoadFile(hwnd);
                     glFlush();
-                    SwapBuffers(hdc);
                     break;
                 case Clear_Screen:
                     clearScreen();
                     glFlush();
-                    SwapBuffers(hdc);
                     MessageBeep(MB_ICONASTERISK);
                     break;
             }
@@ -242,7 +239,6 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
             // TODO create the tools section of every thing
             glFlush();
 
-            SwapBuffers(hdc);
             cout << "worknig lol";
             cout.flush();
 
@@ -254,7 +250,6 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
 
             glFlush();
 
-            SwapBuffers(hdc);
             break;
         case WM_CLOSE:
             DestroyWindow(hwnd);
