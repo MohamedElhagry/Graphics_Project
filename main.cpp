@@ -20,6 +20,7 @@ using namespace std;
 
 /// init painter
 const int toolsHigth = 100;
+const int bufferSize = 15;
 const int screenWidth = 800;
 const int screenHeight = 600 - toolsHigth;
 GLfloat drawingColor[] = {1.0f, 1.0f, 0.0f};
@@ -303,10 +304,28 @@ void EndOpenGl(HGLRC glrc) {
     wglDeleteContext(glrc);
 }
 
+
+enum ShapeType {
+    CircleS, RectangleS, EllipseS, SquareS, PolygonS, None
+};
+
 LRESULT WINAPI
 MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
     static HDC hdc;
     static HGLRC glrc;
+    static int x, y, choice, choice2;
+    static Point points[bufferSize];
+    static bool inProcess = false;
+    static bool defaultAlgorithms = false;
+    static int target, counter;
+    static int n;
+    static ShapeType lastShape;
+    static double R, A, B;
+    static int xc, yc;
+    static int quarter;
+    static vector<Point> pointsVec;
+
+
     switch (mcode) {
         /// action listeners
         case WM_COMMAND:
