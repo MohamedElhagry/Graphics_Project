@@ -3,12 +3,10 @@
 #include <gl\GLu.h>
 #include <math.h>
 #include <iostream>
-#include <vector>
 #include <fstream>
 #include "DrawSimpleShapes.h"
 #include "hermitFilling.h"
 #include "fillingQuarter.h"
-
 
 #pragma comment(lib, "opengl32")
 #pragma comment(lib, "glu32")
@@ -17,8 +15,9 @@ using namespace std;
 
 
 /// init painter
+const int toolsHigth = 100;
 const int screenWidth = 800;
-const int screenHeight = 600;
+const int screenHeight = 600 - toolsHigth;
 GLfloat drawingColor[] = {1.0f, 1.0f, 0.0f};
 GLfloat backgroundColor[] = {1.0f, 1.0f, 1.0f};
 
@@ -54,10 +53,11 @@ void AddMenu(HWND hwnd) {
 
 /// Save and Load files
 void SaveFile(HWND hwnd) {
-    RECT rect = {0};
+    RECT rect;
     GetWindowRect(hwnd, &rect);
 
     uint32_t *pixels = (uint32_t *) malloc(sizeof(uint32_t) * screenWidth * screenHeight);
+
     glReadPixels(rect.left, rect.top, screenWidth, screenHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
     ofstream myfile;
@@ -83,10 +83,9 @@ void LoadFile(HWND hwnd) {
     RECT rect = {0};
     ifstream myfile;
     myfile.open("file.txt");
-    GetWindowRect(hwnd, &rect);
     uint32_t pixel;
 
-    for (int i = 0; i < screenHeight; i++) {
+    for (int i = toolsHigth + 1; i < screenHeight; i++) {
         for (int j = 0; j < screenWidth; j++) {
             myfile >> pixel;
             glColor4ubv((GLubyte *) &pixel);
@@ -133,29 +132,29 @@ const int NpalletWidth = 6;
 const int NpalletHigth = 2;
 const int stepright = palletWidth + 10;
 const int stepdown = palletHigth + 5;
-const int toolsHigth = 100;
-GLfloat toolsLine[] = {0.5111f, 0.5111f, 0.5111f};
-GLfloat toolsBKColor[] = {0.89f, 0.89f, 0.89f};
+GLfloat toolsShading[] = {0.62f, 0.62f, 0.62f};
+GLfloat toolsBKColor[] = {0.97f, 0.97f, 0.97f};
 GLfloat Colors[NpalletWidth * NpalletHigth][3] = {{1.0f, 0,    0},      // Red
                                                   {0,    1.0f, 0},      // Green
                                                   {0,    0,    1.0f},   // Blue
-                                                  {1.0f, 1.0,    0},    // Yellow
-                                                  {0,    1.0f, 0},
-                                                  {0,    0,    1.0f},
-                                                  {1.0f, 0,    0},
-                                                  {0,    1.0f, 0},
-                                                  {0,    0,    1.0f},
-                                                  {1.0f, 0,    0},
-                                                  {0,    1.0f, 0},
-                                                  {0,    0,    1.0f},};
+                                                  {1.0f, 1.0,  0},    // Yellow
+                                                  {0,    1.0f, 1.0f},   // Cyan
+                                                  {0,    0,    0},
+                                                  {0,    0,    0},
+                                                  {0,    0,    0},
+                                                  {0,    0,    0},
+                                                  {0,    0,    0},
+                                                  {0,    0,    0},
+                                                  {0,    0,    0}};
 vector<vector<int>> toolsButton;
 
 void drawBlock(int x1, int y1, int x3, int y3, GLfloat *c) {
     FillRectangleWithHermite(x1, y1, x3, y3, c);
+    drawRectangle(x1, y1, x3, y3, toolsShading);
     toolsButton.push_back({x1, x3, y1, y3});
 }
 
-int choosetool(int x, int y) {
+int chooseTool(int x, int y) {
     int i = 0;
     while (i < toolsButton.size() &&
            !(toolsButton[i][0] < x && toolsButton[i][1] > x && toolsButton[i][2] < y && toolsButton[i][3] > y)) {
@@ -169,18 +168,18 @@ int choosetool(int x, int y) {
 void addToolsSction() {
 
     FillScreen(0, screenWidth, 0, toolsHigth, toolsBKColor);
-    drawLine(0, toolsHigth, screenWidth, toolsHigth, toolsLine);
+    drawLine(0, toolsHigth, screenWidth, toolsHigth, toolsShading);
     int i = 0;
     for (int y = 0; y < NpalletHigth; y++) {
         for (int x = 0; x < NpalletWidth; x++) {
-
-            // TODO Choose color for each button
             drawBlock(palletX + x * stepright, palletY + y * stepdown, x * stepright + palletWidth,
                       y * stepdown + palletHigth,
                       Colors[i++]);
 
         }
     }
+
+
 }
 
 void getColor(LPARAM lp) {
@@ -285,7 +284,7 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
             AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));
             break;
         case WM_LBUTTONDOWN:
-            choosetool(LOWORD(lp), HIWORD(lp));
+            chooseTool(LOWORD(lp), HIWORD(lp));
 
             break;
         case WM_CLOSE:
