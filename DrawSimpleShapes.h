@@ -1,9 +1,30 @@
 //
+// Created by Mohamed on 5/31/2022.
+//
+
+#ifndef GRAPHICS_PROJECT_DRAWSIMPLESHAPES_H
+#define GRAPHICS_PROJECT_DRAWSIMPLESHAPES_H
+
+//
 // Created by Mohamed on 5/27/2022.
 //
 
 
-void swap(int &x1, int &y1, int &x2, int &y2) {
+#pragma comment(lib, "opengl32")
+#pragma comment(lib, "glu32")
+#include <gl\GLu.h>
+
+struct Point {
+    int x, y;
+
+    Point(int x = 0, int y = 0)
+    {
+        this->x = x;
+        this->y = y;
+    }
+};
+
+inline void swap(int &x1, int &y1, int &x2, int &y2) {
     int tmp = x1;
     x1 = x2;
     x2 = tmp;
@@ -13,18 +34,18 @@ void swap(int &x1, int &y1, int &x2, int &y2) {
 }
 
 
-double max(double a, double b)
+inline double max(double a, double b)
 {
     if(a > b)
         return a;
     return b;
 }
 
-int Round(double x) {
+inline int Round(double x) {
     return (int) (x + 0.5);
 }
 
-void drawPoint(int x, int y, GLfloat *drawingColor) {
+inline void  drawPoint(int x, int y, GLfloat *drawingColor) {
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
     glVertex2d(x, y);
@@ -36,12 +57,12 @@ void drawPoint(int x, int y, GLfloat *drawingColor) {
 
 //Line algorithms
 
-void drawLineMidPoint(int x1, int y1, int x2, int y2, GLfloat *drawingColor);
-void drawLine(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
+inline void  drawLineMidPoint(int x1, int y1, int x2, int y2, GLfloat *drawingColor);
+inline void  drawLine(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
     drawLineMidPoint(x1,y1,x2,y2,drawingColor);
 }
 
-void drawLineDDA(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
+inline void drawLineDDA(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
 
@@ -70,7 +91,7 @@ void drawLineDDA(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
     glFlush();
 }
 
-void drawLineMidPoint(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
+inline void drawLineMidPoint(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
 
@@ -162,7 +183,7 @@ void drawLineMidPoint(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
     glFlush();
 }
 
-void drawLineParametric(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
+inline void drawLineParametric(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
 
@@ -182,7 +203,7 @@ void drawLineParametric(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
 }
 
 //Circle algorithms
-void draw8Points(int xc, int yc, int x, int y) {
+inline void draw8Points(int xc, int yc, int x, int y) {
     glVertex2d(xc + x, yc + y);
     glVertex2d(xc + x, yc - y);
     glVertex2d(xc - x, yc - y);
@@ -194,7 +215,7 @@ void draw8Points(int xc, int yc, int x, int y) {
 }
 
 
-void drawCircle(int xc, int yc, int R, GLfloat *drawingColor) {
+inline void drawCircle(int xc, int yc, int R, GLfloat *drawingColor) {
 
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
@@ -211,7 +232,7 @@ void drawCircle(int xc, int yc, int R, GLfloat *drawingColor) {
     glFlush();
 }
 
-void drawCirclePolar(int xc, int yc, int R, GLfloat *drawingColor) {
+inline void drawCirclePolar(int xc, int yc, int R, GLfloat *drawingColor) {
 
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
@@ -231,7 +252,7 @@ void drawCirclePolar(int xc, int yc, int R, GLfloat *drawingColor) {
     glFlush();
 }
 
-void drawCirclePolarIterative(int xc, int yc, int R, GLfloat *drawingColor) {
+inline void drawCirclePolarIterative(int xc, int yc, int R, GLfloat *drawingColor) {
 
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
@@ -252,7 +273,7 @@ void drawCirclePolarIterative(int xc, int yc, int R, GLfloat *drawingColor) {
     glFlush();
 }
 
-void drawCircleMidPoint(int xc, int yc, int R, GLfloat *drawingColor) {
+inline void drawCircleMidPoint(int xc, int yc, int R, GLfloat *drawingColor) {
 
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
@@ -281,7 +302,7 @@ void drawCircleMidPoint(int xc, int yc, int R, GLfloat *drawingColor) {
     glFlush();
 }
 
-void drawCircleMidPointModified(int xc, int yc, int R, GLfloat *drawingColor) {
+inline void drawCircleMidPointModified(int xc, int yc, int R, GLfloat *drawingColor) {
 
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
@@ -318,14 +339,14 @@ void drawCircleMidPointModified(int xc, int yc, int R, GLfloat *drawingColor) {
 
 //Ellipse Algorithms
 
-void Draw4Points( int xc, int yc, int x, int y) {
+inline void Draw4Points( int xc, int yc, int x, int y) {
     glVertex2d( xc + x, yc + y);
     glVertex2d( xc - x, yc + y);
     glVertex2d( xc + x, yc - y);
     glVertex2d( xc - x, yc - y);
 }
 
-void drawEllipsePolar(int xc, int yc, int A, int B, GLfloat *drawingColor)
+inline void drawEllipsePolar(int xc, int yc, int A, int B, GLfloat *drawingColor)
 {
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
@@ -356,7 +377,7 @@ void drawEllipsePolar(int xc, int yc, int A, int B, GLfloat *drawingColor)
     glFlush();
 }
 
-void drawEllipseMidPoint(int xc, int yc, int A, int B, GLfloat *drawingColor)
+inline void drawEllipseMidPoint(int xc, int yc, int A, int B, GLfloat *drawingColor)
 {
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
@@ -385,7 +406,7 @@ void drawEllipseMidPoint(int xc, int yc, int A, int B, GLfloat *drawingColor)
     glFlush();
 }
 
-void drawRectangle(int x1, int y1, int x3, int y3, GLfloat *c) {
+inline void drawRectangle(int x1, int y1, int x3, int y3, GLfloat *c) {
     int x2 = x1, y2 = y3;
     int x4 = x3, y4 = y1;
     drawLine(x1, y1, x2, y2, c);
@@ -394,3 +415,4 @@ void drawRectangle(int x1, int y1, int x3, int y3, GLfloat *c) {
     drawLine(x4, y4, x1, y1, c);
 }
 
+#endif //GRAPHICS_PROJECT_DRAWSIMPLESHAPES_H

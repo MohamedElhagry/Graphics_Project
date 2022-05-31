@@ -1,8 +1,11 @@
 //
-// Created by Mohamed on 5/27/2022.
+// Created by Mohamed on 5/31/2022.
 //
+
+#ifndef GRAPHICS_PROJECT_CLIPPING_ALGORITHMS_H
+#define GRAPHICS_PROJECT_CLIPPING_ALGORITHMS_H
 #include "iostream"
-#include "Draw Simple Shapes.cpp"
+#include "DrawSimpleShapes.h"
 using namespace std;
 
 //Rectangular clipping window
@@ -12,11 +15,7 @@ union OutCode{
     struct{unsigned left:1, top:1, right:1, bot:1;};
 };
 
-struct Point{
-    double x, y;
-};
-
-OutCode getOutCode(double x, double y, int left, int top, int right, int bot)
+inline OutCode getOutCode(double x, double y, int left, int top, int right, int bot)
 {
     OutCode out;
     out.All = 0;
@@ -32,21 +31,21 @@ OutCode getOutCode(double x, double y, int left, int top, int right, int bot)
     return out;
 }
 
-Point VIntersect(double xs, double ys, double xe, double ye, int x){
+inline Point VIntersect(double xs, double ys, double xe, double ye, int x){
     Point p;
     p.x = x;
     p.y = ys + (ye-ys)*(x-xs)/(xe-xs);
     return p;
 }
 
-Point HIntersect(double xs, double ys, double xe, double ye, int y){
+inline Point HIntersect(double xs, double ys, double xe, double ye, int y){
     Point p;
     p.y = y;
     p.x = xs + (xe-xs)*(y-ys)/(ye-ys);
     return p;
 }
 
-void clipPoint(int x, int y, int left, int top, int right, int bot, GLfloat c){
+inline void clipPoint(int x, int y, int left, int top, int right, int bot, GLfloat c){
     glBegin(GL_POINTS);
     glColor3f(1, 0, 0);
     if(x >= left && x <= right && y >= top && y <= bot){
@@ -57,7 +56,7 @@ void clipPoint(int x, int y, int left, int top, int right, int bot, GLfloat c){
 }
 
 //Cohen Sutherland
-void clipLine(int xs, int ys, int xe, int ye, int left, int top, int right, int bot, GLfloat* c)
+inline void clipLine(int xs, int ys, int xe, int ye, int left, int top, int right, int bot, GLfloat* c)
 {
     double x1 = xs, y1 = ys, x2 = xe, y2 = ye;
     OutCode oc1 = getOutCode(x1,y1,left,top,right,bot);
@@ -97,7 +96,25 @@ void clipLine(int xs, int ys, int xe, int ye, int left, int top, int right, int 
 
 }
 
-void clipPolygon()
+
+
+bool inLeft(Point &p, int edge) {
+    return p.x >= edge;
+}
+
+bool inRight(Point &p, int edge) {
+    return p.x <= edge;
+}
+
+bool inTop(Point &p, int edge) {
+    return p.y >= edge;
+}
+
+bool inBottom(Point &p, int edge) {
+    return p.y <= edge;
+}
+
+inline void clipPolygon()
 {
 
 }
@@ -106,11 +123,11 @@ void clipPolygon()
 //Circular clipping window
 
 //utilities
-bool inside(int x, int y, int xc, int yc, double R){
+inline bool inside(int x, int y, int xc, int yc, double R){
     return (x - xc) * (x - xc) + (y - yc) * (y - yc) <= R * R;
 }
 
-bool pointInsideLine(int x, int y, int xs, int ys, int xe, int ye){
+inline bool pointInsideLine(int x, int y, int xs, int ys, int xe, int ye){
     if(xs > xe)
         swap(xs, xe);
     if(ys > ye)
@@ -120,7 +137,7 @@ bool pointInsideLine(int x, int y, int xs, int ys, int xe, int ye){
 }
 
 //still under development
-bool CIntersect(double xs, double ys, double xe, double ye, double xc, double yc ,double R, Point &p1, Point &p2){
+inline bool CIntersect(double xs, double ys, double xe, double ye, double xc, double yc ,double R, Point &p1, Point &p2){
     double dy = ye - ys;
     double dx = xe - xs;
     double D = (ys - yc - dy/dx * xs);
@@ -166,12 +183,12 @@ bool CIntersect(double xs, double ys, double xe, double ye, double xc, double yc
     return true;
 }
 
-void clipPointFromCircle(int x, int y, int xc, int yc, int R, GLfloat *c){
+inline void clipPointFromCircle(int x, int y, int xc, int yc, int R, GLfloat *c){
     if(inside(x,y,xc,yc,R))
         drawPoint(x, y, c);
 }
 
-void clipLineFromCircle(int xs, int ys, int xe, int ye, int xc, int yc, int R, GLfloat *c){
+inline void clipLineFromCircle(int xs, int ys, int xe, int ye, int xc, int yc, int R, GLfloat *c){
     Point p1, p2;
     bool intersects = CIntersect(xs ,ys, xe, ye, xc, yc, R, p1, p2);
     if(!intersects)
@@ -180,3 +197,5 @@ void clipLineFromCircle(int xs, int ys, int xe, int ye, int xc, int yc, int R, G
     drawCircle(xc,yc,R, c);
     drawLine(p1.x,p1.y,p2.x,p2.y,c);
 }
+
+#endif //GRAPHICS_PROJECT_CLIPPING_ALGORITHMS_H
