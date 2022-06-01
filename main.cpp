@@ -318,7 +318,7 @@ void drawOnShapeButtons() {
     for (int i = 0; i < 10; i += 2) {
         T1[1] += i;
         T2[1] += i;
-        DrawHermiteCurve(p[0], T1, p[3], T2, Black);
+        DrawHermiteCurvee(p[0], T1, p[3], T2, Black);
     }
 
     /// Clip
@@ -389,6 +389,7 @@ void clearScreen() {
     /// global background color
     FillScreen(0, screenWidth, toolsHigth + 1, screenHeight, backgroundColor);
     cout << "Screen Cleared\n";
+    cout.flush();
     MessageBeep(MB_ICONASTERISK);
 }
 
@@ -475,11 +476,13 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                     break;
                 case Clear_Screen:
                     clearScreen();
-                    MessageBeep(MB_ICONASTERISK);
                     break;
                 case WHITE_BK: {
-                    GLfloat color[] = {1.0f, 1.0f, 1.0f};
-                    FillScreen(0, screenWidth, toolsHigth + 1, screenHeight, color);
+                    backgroundColor[0] = 1.0f;
+                    backgroundColor[1] = 1.0f;
+                    backgroundColor[2] = 1.0f;
+                    cout << "Background Color White\n";
+                    clearScreen();
                     break;
                 }
                 case Shape_choice:
