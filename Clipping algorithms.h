@@ -7,6 +7,8 @@
 #include "iostream"
 #include "DrawSimpleShapes.h"
 #include <math.h>
+#include <vector>
+
 using namespace std;
 
 //Rectangular clipping window
