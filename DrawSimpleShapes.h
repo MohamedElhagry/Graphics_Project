@@ -12,16 +12,43 @@
 
 #pragma comment(lib, "opengl32")
 #pragma comment(lib, "glu32")
+
 #include <gl\GLu.h>
 
 struct Point {
     int x, y;
 
-    Point(int x = 0, int y = 0)
-    {
+    Point(int x = 0, int y = 0) {
         this->x = x;
         this->y = y;
     }
+};
+
+struct Vector {
+    double v[2];
+
+    Vector(double x = 0, double y = 0) {
+        v[0] = x;
+        v[1] = y;
+    }
+
+    Vector(int x, int y) {
+        v[0] = x;
+        v[1] = y;
+    }
+
+    double &operator[](int i) {
+        return v[i];
+    }
+
+    Vector operator-(Vector v2) {
+        return Vector(this->v[0] - v2[0], this->v[1] - v2[1]);
+    }
+
+    Vector operator*(double multiplicand) {
+        return Vector(this->v[0] * multiplicand, this->v[1] * multiplicand);
+    }
+
 };
 
 inline void swap(int &x1, int &y1, int &x2, int &y2) {
@@ -34,9 +61,8 @@ inline void swap(int &x1, int &y1, int &x2, int &y2) {
 }
 
 
-inline double max(double a, double b)
-{
-    if(a > b)
+inline double max(double a, double b) {
+    if (a > b)
         return a;
     return b;
 }
@@ -45,7 +71,7 @@ inline int Round(double x) {
     return (int) (x + 0.5);
 }
 
-inline void  drawPoint(int x, int y, GLfloat *drawingColor) {
+inline void drawPoint(int x, int y, GLfloat *drawingColor) {
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
     glVertex2d(x, y);
@@ -57,9 +83,10 @@ inline void  drawPoint(int x, int y, GLfloat *drawingColor) {
 
 //Line algorithms
 
-inline void  drawLineMidPoint(int x1, int y1, int x2, int y2, GLfloat *drawingColor);
-inline void  drawLine(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
-    drawLineMidPoint(x1,y1,x2,y2,drawingColor);
+inline void drawLineMidPoint(int x1, int y1, int x2, int y2, GLfloat *drawingColor);
+
+inline void drawLine(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
+    drawLineMidPoint(x1, y1, x2, y2, drawingColor);
 }
 
 inline void drawLineDDA(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
@@ -164,7 +191,7 @@ inline void drawLineMidPoint(int x1, int y1, int x2, int y2, GLfloat *drawingCol
 
             int d = -2 * dx - dy;
             int d1 = -2 * dx;
-            int d2 = -2 * ( dx + dy);
+            int d2 = -2 * (dx + dy);
             glVertex2d(x, y);
             while (y > y2) {
                 if (d >= 0) {
@@ -189,10 +216,9 @@ inline void drawLineParametric(int x1, int y1, int x2, int y2, GLfloat *drawingC
 
     int dx = x2 - x1;
     int dy = y2 - y1;
-    double x,  y;
+    double x, y;
 
-    for(double t = 0.0; t <= 1.0; t += 1.0/ max(abs(dx),abs(dy)))
-    {
+    for (double t = 0.0; t <= 1.0; t += 1.0 / max(abs(dx), abs(dy))) {
         x = x1 + t * dx;
         y = y1 + t * dy;
         glVertex2d(Round(x), Round(y));
@@ -239,10 +265,10 @@ inline void drawCirclePolar(int xc, int yc, int R, GLfloat *drawingColor) {
     double x = R;
     double y = 0;
     double theta = 0;
-    double dTheta = 1.0/R;
+    double dTheta = 1.0 / R;
 
-    while(x > y){
-        theta += dTheta ;
+    while (x > y) {
+        theta += dTheta;
         x = R * cos(theta);
         y = R * sin(theta);
         draw8Points(xc, yc, Round(x), Round(y));
@@ -259,11 +285,11 @@ inline void drawCirclePolarIterative(int xc, int yc, int R, GLfloat *drawingColo
     double x = R;
     double y = 0;
 
-    double dTheta = 1.0/R;
+    double dTheta = 1.0 / R;
     double cdTheta = cos(dTheta);
     double sdTheta = sin(dTheta);
 
-    while(x > y){
+    while (x > y) {
         x = x * cdTheta - y * sdTheta;
         y = x * sdTheta + y * cdTheta;
         draw8Points(xc, yc, Round(x), Round(y));
@@ -286,10 +312,10 @@ inline void drawCircleMidPoint(int xc, int yc, int R, GLfloat *drawingColor) {
     while (x < y) {
 
         if (d < 0) {
-            d += 2*x + 3;
+            d += 2 * x + 3;
             x++;
         } else {
-            d += 2*(x-y) + 5;
+            d += 2 * (x - y) + 5;
             x++;
             y--;
         }
@@ -311,7 +337,7 @@ inline void drawCircleMidPointModified(int xc, int yc, int R, GLfloat *drawingCo
     int y = R;
     int d = 1 - R;
     int d1 = 3;
-    int d2 = 5 - 2*R ;
+    int d2 = 5 - 2 * R;
     draw8Points(xc, yc, x, y);
 
     while (x < y) {
@@ -339,15 +365,14 @@ inline void drawCircleMidPointModified(int xc, int yc, int R, GLfloat *drawingCo
 
 //Ellipse Algorithms
 
-inline void Draw4Points( int xc, int yc, int x, int y) {
-    glVertex2d( xc + x, yc + y);
-    glVertex2d( xc - x, yc + y);
-    glVertex2d( xc + x, yc - y);
-    glVertex2d( xc - x, yc - y);
+inline void Draw4Points(int xc, int yc, int x, int y) {
+    glVertex2d(xc + x, yc + y);
+    glVertex2d(xc - x, yc + y);
+    glVertex2d(xc + x, yc - y);
+    glVertex2d(xc - x, yc - y);
 }
 
-inline void drawEllipsePolar(int xc, int yc, int A, int B, GLfloat *drawingColor)
-{
+inline void drawEllipsePolar(int xc, int yc, int A, int B, GLfloat *drawingColor) {
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
 
@@ -377,8 +402,7 @@ inline void drawEllipsePolar(int xc, int yc, int A, int B, GLfloat *drawingColor
     glFlush();
 }
 
-inline void drawEllipseMidPoint(int xc, int yc, int A, int B, GLfloat *drawingColor)
-{
+inline void drawEllipseMidPoint(int xc, int yc, int A, int B, GLfloat *drawingColor) {
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
 
@@ -386,10 +410,10 @@ inline void drawEllipseMidPoint(int xc, int yc, int A, int B, GLfloat *drawingCo
     int Bsq = B * B;
     //7th quad
     int x = -A;
-    int  y = 0;
+    int y = 0;
     int d = -4 * Bsq * A + 4 * Asq + Bsq;
 
-    Draw4Points( xc, yc, x, y);
+    Draw4Points(xc, yc, x, y);
     while (abs(x) * Bsq > abs(y) * Asq) {
         if (d < 0) {
             d += 8 * Asq * y + 12 * Asq;
@@ -399,7 +423,7 @@ inline void drawEllipseMidPoint(int xc, int yc, int A, int B, GLfloat *drawingCo
             x++;
             y++;
         }
-        Draw4Points( xc, yc, x, y);
+        Draw4Points(xc, yc, x, y);
     }
 
     glEnd();
@@ -413,6 +437,41 @@ inline void drawRectangle(int x1, int y1, int x3, int y3, GLfloat *c) {
     drawLine(x2, y2, x3, y3, c);
     drawLine(x3, y3, x4, y4, c);
     drawLine(x4, y4, x1, y1, c);
+}
+
+inline void DrawHermiteCurvee(Vector p1, Vector T1, Vector p2, Vector T2, GLfloat *drawingColor) {
+    glBegin(GL_POINTS);
+    glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
+    double a0 = p1[0],
+            a1 = T1[0],
+            a2 = -3 * p1[0] - 2 * T1[0] + 3 * p2[0] - T2[0],
+            a3 = 2 * p1[0] + T1[0] - 2 * p2[0] + T2[0];
+    double b0 = p1[1],
+            b1 = T1[1],
+            b2 = -3 * p1[1] - 2 * T1[1] + 3 * p2[1] - T2[1],
+            b3 = 2 * p1[1] + T1[1] - 2 * p2[1] + T2[1];
+    for (double t = 0; t <= 1; t += 0.001) {
+        double t2 = t * t, t3 = t2 * t;
+        double x = a0 + a1 * t + a2 * t2 + a3 * t3;
+        double y = b0 + b1 * t + b2 * t2 + b3 * t3;
+        glVertex2d(round(x), round(y));
+    }
+    glEnd();
+    glFlush();
+}
+
+inline void CardinalSplines(Vector Points[], int n, double c, GLfloat *c1, GLfloat *c2, double R, int xc, int yc) {
+    Vector slopes[n];
+    for (int i = 1; i < n - 1; i++) {
+        slopes[i] = (Points[i + 1] - Points[i - 1]) * (c / 2);
+    }
+
+    slopes[0] = (Points[1] - Points[0]) * (c / 2);
+    slopes[n - 1] = (Points[n - 1] - Points[n - 2]) * (c / 2);
+
+    for (int i = 0; i < n - 1; i++) {
+        DrawHermiteCurvee(Points[i], slopes[i], Points[i + 1], slopes[i + 1], c1);
+    }
 }
 
 #endif //GRAPHICS_PROJECT_DRAWSIMPLESHAPES_H

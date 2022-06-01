@@ -10,12 +10,15 @@
 #pragma comment(lib, "glu32")
 #include <gl\GLu.h>
 
+using namespace std;
+
 struct EdgeRec {
     double x, slopeInv;
     int yMax;
 
     EdgeRec(double x = 0, int yMax = 0, double slopeInv = 0) : x(x), yMax(yMax), slopeInv(slopeInv) {}
 };
+
 
 typedef vector<EdgeRec> EdgeTable[800];
 
