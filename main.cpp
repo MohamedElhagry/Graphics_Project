@@ -376,14 +376,7 @@ void addShapesButtons() {
     drawOnShapeButtons();
 }
 
-void getColor(LPARAM lp) {
-    /// Get Color
-    glReadPixels(LOWORD(lp), HIWORD(lp), 1, 1, GL_RGBA, GL_FLOAT, drawingColor);
-    cout << "Color Changed to " << "R = " << drawingColor[0] << " B = " << drawingColor[1] << " G = " << drawingColor[2]
-         << '\n';
-    cout.flush();
-    MessageBeep(MB_ICONASTERISK);
-}
+
 
 /// clear screen "f. Implement item to clear screen from shapes"
 void clearScreen() {

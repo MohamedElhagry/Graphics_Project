@@ -14,6 +14,18 @@
 #pragma comment(lib, "glu32")
 
 #include <gl\GLu.h>
+#include <iostream>
+
+GLfloat* getColor(LPARAM lp) {
+    /// Get Color
+    GLfloat *color;
+    glReadPixels(LOWORD(lp), HIWORD(lp), 1, 1, GL_RGBA, GL_FLOAT, color);
+    return color;
+    //cout << "Color Changed to " << "R = " << drawingColor[0] << " B = " << drawingColor[1] << " G = " << drawingColor[2]
+    //     << '\n';
+    //cout.flush();
+    //MessageBeep(MB_ICONASTERISK);
+}
 
 struct Point {
     int x, y;
