@@ -489,6 +489,9 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                     cout << "shapes\n";
                     cout.flush();
                     choice = lp;
+                    if (defaultAlgorithms == 1) {
+                        choice2 = 1;
+                    }
                     switch (choice) {
                         case 0 :        /// Line
                             inProcess = true;
@@ -650,6 +653,7 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                     }
                 }
             } else {
+                // TODO all chices
                 if (inProcess) {
                     points[counter++] = Point(x, y);
 
