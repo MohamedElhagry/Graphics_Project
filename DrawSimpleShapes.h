@@ -372,6 +372,33 @@ inline void Draw4Points(int xc, int yc, int x, int y) {
     glVertex2d(xc - x, yc - y);
 }
 
+inline void drawEllipse(int xc, int yc, int A, int B, GLfloat *drawingColor) {
+    glBegin(GL_POINTS);
+    glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
+
+    int x = 0;
+    double y = B;
+    Draw4Points(xc, yc, 0, B);
+    while(x*B*B < y*A*A)
+    {   x++;
+        y = B * sqrt(1.0 - ((double)x*x)/(A*A));
+        Draw4Points(xc, yc, x, Round(y));
+    }
+
+    int y1 = 0;
+    double x1 = A;
+    Draw4Points(xc,yc,A,0);
+    while(x1*B*B > y1*A*A)
+    {
+        y1++;
+        x1 = A*sqrt(1.0 - ((double)y1*y1) / (B*B));
+        Draw4Points(xc,yc,Round(x1),y1);
+    }
+
+    glEnd();
+    glFlush();
+}
+
 inline void drawEllipsePolar(int xc, int yc, int A, int B, GLfloat *drawingColor) {
     glBegin(GL_POINTS);
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
@@ -409,20 +436,21 @@ inline void drawEllipseMidPoint(int xc, int yc, int A, int B, GLfloat *drawingCo
     int Asq = A * A;
     int Bsq = B * B;
     //7th quad
-    int x = -A;
-    int y = 0;
-    int d = -4 * Bsq * A + 4 * Asq + Bsq;
+    int x = 0;
+    int y = -B;
+    int d = -4 * Asq * B + 4 * Bsq + Asq;
 
-    Draw4Points(xc, yc, x, y);
-    while (abs(x) * Bsq > abs(y) * Asq) {
+    Draw4Points( xc, yc, x, y);
+    while (abs(x) * Bsq < abs(y) * Asq) {
         if (d < 0) {
-            d += 8 * Asq * y + 12 * Asq;
-            y++;
-        } else {
-            d += 8 * Asq * y + 12 * Asq + 8 * Bsq * x + 8 * Bsq;
+            d += 8 * Bsq * x + 12 * Bsq + 8 * Asq * y + 8 * Asq;
             x++;
             y++;
+        } else {
+            d += 8 * Bsq * x + 12 * Bsq ;
+            x++;
         }
+
         Draw4Points(xc, yc, x, y);
     }
 
@@ -460,7 +488,7 @@ inline void DrawHermiteCurvee(Vector p1, Vector T1, Vector p2, Vector T2, GLfloa
     glFlush();
 }
 
-inline void CardinalSplines(Vector Points[], int n, double c, GLfloat *c1, GLfloat *c2, double R, int xc, int yc) {
+inline void cardinalSplines(Vector Points[], int n, double c, GLfloat *c1) {
     Vector slopes[n];
     for (int i = 1; i < n - 1; i++) {
         slopes[i] = (Points[i + 1] - Points[i - 1]) * (c / 2);
@@ -473,5 +501,15 @@ inline void CardinalSplines(Vector Points[], int n, double c, GLfloat *c1, GLflo
         DrawHermiteCurvee(Points[i], slopes[i], Points[i + 1], slopes[i + 1], c1);
     }
 }
+
+inline void cardinalSplines(Point* points, int n, double c, GLfloat *c1) {
+    Vector pointsVector[n];
+    for(int i=0; i<n; i++)
+    {
+        pointsVector[i] = Vector(points[i].x, points[i].y);
+    }
+    cardinalSplines(pointsVector, n, c, c1);
+}
+
 
 #endif //GRAPHICS_PROJECT_DRAWSIMPLESHAPES_H

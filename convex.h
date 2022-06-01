@@ -66,4 +66,12 @@ inline void FillPolygonC(vector<Point> points, GLfloat *drawingColor)
     TableToScreenC(table, drawingColor);
 }
 
+inline void FillPolygonC(Point* points, int n, GLfloat *drawingColor)
+{
+    vector<Point> pointVec;
+    for(int i=0; i<n; i++)
+        pointVec.push_back(Point(points[i].x, points[i].y));
+    FillPolygonC(pointVec, drawingColor);
+}
+
 #endif //GRAPHICS_PROJECT_CONVEX_H

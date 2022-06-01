@@ -48,18 +48,20 @@ inline Point HIntersect(double xs, double ys, double xe, double ye, int y){
     return p;
 }
 
-inline void clipPoint(int x, int y, int left, int top, int right, int bot, GLfloat c){
+inline void clipPoint(int x, int y, int left, int top, int right, int bot, GLfloat* drawingColor){
     glBegin(GL_POINTS);
-    glColor3f(1, 0, 0);
+    glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
     if(x >= left && x <= right && y >= top && y <= bot){
         glVertex2d(x,y);
     }
     glEnd();
     glFlush();
+    GLfloat borderColor[] = {0.0f, 1.0f, 1.0f};
+    drawRectangle(left, top, right, bot, borderColor);
 }
 
 //Cohen Sutherland
-inline void clipLine(int xs, int ys, int xe, int ye, int left, int top, int right, int bot, GLfloat* c)
+inline void clipLine(int xs, int ys, int xe, int ye, int left, int top, int right, int bot, GLfloat* drawingColor)
 {
     double x1 = xs, y1 = ys, x2 = xe, y2 = ye;
     OutCode oc1 = getOutCode(x1,y1,left,top,right,bot);
@@ -94,8 +96,11 @@ inline void clipLine(int xs, int ys, int xe, int ye, int left, int top, int righ
     }
 
     if( !(oc1.All | oc2.All)){
-        drawLine(x1,y1,x2,y2, c );
+        drawLine(x1,y1,x2,y2, drawingColor );
     }
+
+    GLfloat borderColor[] = {0.0f, 1.0f, 1.0f};
+    drawRectangle(left, top, right, bot, borderColor);
 
 }
 
@@ -147,6 +152,33 @@ Vertex HIntersect(Vertex& v1, Vertex& v2, int yedge)
     return res;
 }
 
+inline void drawPolygon(Vertex *p, int n, GLfloat *drawingColor)
+{
+    VertexList vList;
+    for(int i=0; i<n; i++) vList.push_back(Vertex(p[i].x, p[i].y));
+    Vertex v1 =vList[vList.size() - 1];
+    for(int i=0; i<(int) vList.size(); i++)
+    {
+        Vertex v2 = vList[i];
+        drawLine(Round(v1.x), Round(v1.y), Round(v2.x), Round(v2.y), drawingColor);
+        v1 = v2;
+    }
+}
+
+inline void drawPolygon(Point *p, int n, GLfloat *drawingColor)
+{
+    VertexList vList;
+    for(int i=0; i<n; i++) vList.push_back(Vertex(p[i].x, p[i].y));
+    Vertex v1 =vList[vList.size() - 1];
+    for(int i=0; i<(int) vList.size(); i++)
+    {
+        Vertex v2 = vList[i];
+        drawLine(Round(v1.x), Round(v1.y), Round(v2.x), Round(v2.y), drawingColor);
+        v1 = v2;
+    }
+}
+
+
 inline VertexList clipWithEdge(VertexList p, int edge, IsInFunc In, IntersectFunc Intersect)
 {
     VertexList  outList;
@@ -186,22 +218,19 @@ inline void clipPolygon( Vertex *p, int n, int left, int top, int right, int bot
         drawLine(Round(v1.x), Round(v1.y), Round(v2.x), Round(v2.y), drawingColor);
         v1 = v2;
     }
-
-
+    //drawPolygon(p, n, drawingColor);
+    GLfloat borderColor[] = {0.0f, 1.0f, 1.0f};
+    drawRectangle(left, top, right, bottom, borderColor);
 }
 
-inline void drawPolygon(Vertex *p, int n, GLfloat *drawingColor)
-{
-    VertexList vList;
-    for(int i=0; i<n; i++) vList.push_back(Vertex(p[i].x, p[i].y));
-    Vertex v1 =vList[vList.size() - 1];
-    for(int i=0; i<(int) vList.size(); i++)
-    {
-        Vertex v2 = vList[i];
-        drawLine(Round(v1.x), Round(v1.y), Round(v2.x), Round(v2.y), drawingColor);
-        v1 = v2;
-    }
+
+inline void clipPolygon( Point *p, int n, int left, int top, int right, int bottom, GLfloat *drawingColor) {
+    Vertex verticies[n];
+    for(int i=0; i<n; i++)
+        verticies[i] = Vertex(p[i].x, p[i].y);
+    clipPolygon(verticies, n, left, top, right, bottom, drawingColor);
 }
+
 
 
 //Circular clipping window
@@ -270,6 +299,8 @@ inline bool CIntersect(double xs, double ys, double xe, double ye, double xc, do
 inline void clipPointFromCircle(int x, int y, int xc, int yc, int R, GLfloat *c){
     if(inside(x,y,xc,yc,R))
         drawPoint(x, y, c);
+    GLfloat borderColor[] = {0.0f, 1.0f, 1.0f};
+    drawCircle(xc,yc,R, borderColor);
 }
 
 inline void clipLineFromCircle(int xs, int ys, int xe, int ye, int xc, int yc, int R, GLfloat *c){
@@ -278,7 +309,8 @@ inline void clipLineFromCircle(int xs, int ys, int xe, int ye, int xc, int yc, i
     if(!intersects)
         return;
 
-    drawCircle(xc,yc,R, c);
+    GLfloat borderColor[] = {0.0f, 1.0f, 1.0f};
+    drawCircle(xc,yc,R, borderColor);
     drawLine(p1.x,p1.y,p2.x,p2.y,c);
 }
 

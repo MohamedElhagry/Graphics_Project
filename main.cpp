@@ -11,6 +11,7 @@
 #include "nonConvex.h"
 #include "bezierFilling.h"
 #include "Filling Utilities.h"
+#include "Clipping algorithms.h"
 
 #pragma comment(lib, "opengl32")
 #pragma comment(lib, "glu32")
@@ -451,7 +452,7 @@ LRESULT WINAPI
 MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
     static HDC hdc;
     static HGLRC glrc;
-    static int x, y, choice, choice2;
+    static int x, y, choice, choice2, choice3;
     static Point points[bufferSize];
     static bool inProcess = false;
     static bool defaultAlgorithms = false;
@@ -460,7 +461,7 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
     static ShapeType lastShape;
     static double R, A, B;
     static int xc, yc;
-    static int quarter;
+    static int quarter, num, dist;
     static vector<Point> pointsVec;
 
 
@@ -496,13 +497,9 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                         case 0 :        /// Line
                             inProcess = true;
                             target = 2;
-                            cout << "1-DDA\n";
-                            if (defaultAlgorithms == 1) {
-                                cout << "Please click on two points for the line\n";
-                                break;
-                            }
-                            cout << "2-MidPoint\n3-parametric\n";
+                            cout << "1-DDA\n2-MidPoint\n3-parametric\n";
                             cin >> choice2;
+                            cout << "here\n";
 
                             cout << "Please click on two points for the line\n";
                             break;
@@ -549,50 +546,127 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                             inProcess = true;
                             target = 0;
                             cout << "1-With lines\n";
-                            if (defaultAlgorithms == 1) {
+
+                            /*if (defaultAlgorithms == 1) {
                                 cout << "Please click on two points for the circle\n";
                                 break;
                             }
+                             */
                             cout << "2-With Circles\n";
                             cin >> choice2;
 
                             break;
                         case 6:     /// Convex and Non Convex Filling
                             inProcess = true;
-                            cout << "Please choose the algorithm to fill your polygon\n";
-                            if (defaultAlgorithms == 1) {
-                                cout << "Please click on two points for the circle\n";
-                                break;
-                            }
+                            cout << "Please choose the type of filling\n";
+                            cout << "1-Convex polygon filling, 2-General Polygon filling\n";
                             cin >> choice2;
+
+                            cout << "Please choose the number of points your polygon will have\n";
+                            cin >> target;
+
+                            cout << "please click on your polygon points\n";
                             break;
                         case 7:     /// FloodFill
                             inProcess = true;
+                            target = 1;
                             cout << "Please click on a point to start the floodfill\n";
-                            if (defaultAlgorithms == 1) {
+                            /*
+                              if (defaultAlgorithms == 1) {
                                 cout << "Please click on two points for the circle\n";
                                 break;
                             }
+                            */
                             break;
                         case 8:     /// Curve
                             inProcess = true;
-                            cout << "Please choose the algorithm to draw your spline\n";
-                            if (defaultAlgorithms == 1) {
+                            cout << "Please choose the number of points you want to be included in your spline\n";
+                            /*if (defaultAlgorithms == 1) {
                                 cout << "Please click on two points for the circle\n";
                                 break;
                             }
-                            cout << "Please click on two points for the line\n";
+                            */
+                            cin >> target;
+                            cout << "Please click on the points\n";
                             break;
                         case 9:     /// Clip
                             inProcess = true;
                             target = 2;
                             cout << "1- Rectangular\n";
-                            if (defaultAlgorithms == 1) {
+                            /*
+                             * if (defaultAlgorithms == 1) {
                                 cout << "Please click on two points for the circle\n";
                                 break;
                             }
+                            */
                             cout << "2- square\n3- circle\n";
                             cin >> choice2;
+
+
+                            if(choice2 == 1)
+                            {
+                                target = 4;
+                                cout << "Please enter the type of shape you want to clip\n";
+                                cout << "1-Point\n2-Line\n3-Polygon\n";
+                                cin >> choice3;
+
+
+                                if(choice3 == 1){
+                                    target +=1;
+                                    cout << "Please draw your rectangle then draw ";
+                                    cout << "your point\n";
+                                }
+                                else if(choice3 == 2)
+                                {
+                                    target += 2;
+                                    cout << "Please draw your rectangle then draw ";
+                                    cout << "your line\n";
+                                }
+                                else if(choice3 == 3)
+                                {
+                                    cout << "Please enter the number of sides of the polygon\n";
+                                    cin >> num;
+                                    target += num;
+                                    cout << "Please draw your rectangle then draw ";
+                                    cout << "your polygon\n";
+                                }
+
+                                cout << "You draw the rectangle by selecting the left side, then top, then right, the bottom\n";
+                            }
+                            else if(choice2 == 2) //square clipping and circle clipping
+                            {
+
+                                target = 2;
+                                cout << "Please enter the type of shape you want to clip\n";
+                                cout << "1-Point\n2-Line\n";
+                                cin >> choice3;
+                                if(choice3 == 1){
+                                    cout << "Please draw your square then draw your point\n";
+                                    target +=1;
+                                }
+                                else if(choice3 == 2)
+                                {
+                                    cout << "Please draw your square then draw your line\n";
+                                    target += 2;
+                                }
+                            }
+                            else if(choice2 == 3)
+                            {
+                                target = 2;
+                                cout << "Please enter the type of shape you want to clip\n";
+                                cout << "1-Point\n2-Line\n";
+                                cin >> choice3;
+                                if(choice3 == 1){
+                                    cout << "Please draw your circle then draw your point\n";
+                                    target +=1;
+                                }
+                                else if(choice3 == 2)
+                                {
+                                    cout << "Please draw your circle then draw your line\n";
+                                    target += 2;
+                                }
+
+                            }
 
                             break;
                         default:
@@ -655,7 +729,8 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
             } else {
                 // TODO all chices
                 if (inProcess) {
-                    points[counter++] = Point(x, y);
+                    if(target != counter)
+                        points[counter++] = Point(x, y);
 
                     if (counter == target) {
                         counter = 0;
@@ -663,21 +738,19 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
 
                         switch (choice) {
                             case 0 :        /// Line
-                                inProcess = false;
                                 //"1-DDA, 2-MidPoint, 3-parametric\n";
 
                                 if (choice2 == 1) {
                                     drawLineDDA(points[0].x, points[0].y, points[1].x, points[1].y, drawingColor);
-                                } else if (choice == 2) {
+                                } else if (choice2 == 2) {
                                     drawLineMidPoint(points[0].x, points[0].y, points[1].x, points[1].y,
                                                      drawingColor);
-                                } else if (choice == 3) {
+                                } else if (choice2 == 3) {
                                     drawLineParametric(points[0].x, points[0].y, points[1].x, points[1].y,
                                                        drawingColor);
                                 }
                                 break;
                             case 1:       /// Square
-
 
                                 drawRectangle(points[0].x, points[0].y, points[1].x, points[1].y, drawingColor);
                                 break;
@@ -689,15 +762,13 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                             case 3:     /// Ellipse
 
                                 //"1-Direct, 2-Polar, 3-MidPoint\n";
-                                R = (points[1].x - points[0].x) * (points[1].x - points[0].x) +
-                                    (points[1].y - points[0].y) * (points[1].y - points[0].y);
-                                B = (points[2].x - points[0].x) * (points[2].x - points[0].x) +
-                                    (points[2].y - points[0].y) * (points[2].y - points[0].y);;
+                                A = sqrt((points[1].x - points[0].x) * (points[1].x - points[0].x));
+                                B = sqrt((points[2].y - points[0].y) * (points[2].y - points[0].y));
                                 if (choice2 == 1) {
-                                    //drawEllipse(points[0].x, points[0].y, points[1].x, points[1].y, drawingColor);
-                                } else if (choice == 2) {
+                                    drawEllipse(points[0].x, points[0].y, A, B, drawingColor);
+                                } else if (choice2 == 2) {
                                     drawEllipsePolar(points[0].x, points[0].y, A, B, drawingColor);
-                                } else if (choice == 3) {
+                                } else if (choice2 == 3) {
                                     drawEllipseMidPoint(points[0].x, points[0].y, A, B, drawingColor);
                                 } else {
                                     drawEllipsePolar(points[0].x, points[0].y, A, B, drawingColor);
@@ -708,8 +779,8 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
 
 
                                 //"1-Direct, 2-Polar, 3- Iterative polar, 4-Midpoint, 5-Modified Midpoint";
-                                R = (points[1].x - points[0].x) * (points[1].x - points[0].x) +
-                                    (points[1].y - points[0].y) * (points[1].y - points[0].y);
+                                R = sqrt((points[1].x - points[0].x) * (points[1].x - points[0].x) +
+                                    (points[1].y - points[0].y) * (points[1].y - points[0].y));
                                 if (choice2 == 1) {
                                     drawCircle(points[0].x, points[0].y, R, drawingColor);
                                 } else if (choice2 == 2) {
@@ -718,7 +789,7 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                                     drawCirclePolarIterative(points[0].x, points[0].y, R, drawingColor);
                                 } else if (choice2 == 4) {
                                     drawCircleMidPoint(points[0].x, points[0].y, R, drawingColor);
-                                } else if (choice == 5) {
+                                } else if (choice2 == 5) {
                                     drawCircleMidPointModified(points[0].x, points[0].y, R, drawingColor);
                                 } else {
                                     drawCircle(points[0].x, points[0].y, R, drawingColor);
@@ -726,14 +797,13 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
 
                                 break;
                             case 5:     /// Fill Circle
-
+                                cout << "Please choose the quarter you want to fill\n";
+                                cin >> quarter;
                                 //"1-With lines, 2-With Circles\n";
-                                R = (points[1].x - points[0].x) * (points[1].x - points[0].x) +
-                                    (points[1].y - points[0].y) * (points[1].y - points[0].y);
                                 if (choice2 == 1) {
                                     FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
                                 } else if (choice2 == 2) {
-
+                                    //algorithm to fill quarter using circle
                                 } else {
                                     FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
                                 }
@@ -741,56 +811,66 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                                 break;
                             case 6:     /// Convex and Non Convex Filling
 
-                                cout << "1-Convex polygon filling, 2-general polygon filling\n";
-                                R = (points[1].x - points[0].x) * (points[1].x - points[0].x) +
-                                    (points[1].y - points[0].y) * (points[1].y - points[0].y);
-                                if (choice2 == 1) {
-                                    FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
-                                } else if (choice2 == 2) {
-
-                                } else {
-                                    FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
+                                drawPolygon(points, target , drawingColor);
+                                if(choice2 == 1)
+                                {
+                                    FillPolygonC(points, target,drawingColor);
+                                }
+                                else{
+                                    FillPolygon(points, target, drawingColor);
                                 }
 
                                 break;
                             case 7:     /// FloodFill
 
-                                cout << "Please click on a point to start the floodfill\n";
-                                //"1-With lines, 2-With Circles\n";
-                                R = (points[1].x - points[0].x) * (points[1].x - points[0].x) +
-                                    (points[1].y - points[0].y) * (points[1].y - points[0].y);
-                                if (choice2 == 1) {
-                                    FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
-                                } else if (choice2 == 2) {
-
-                                } else {
-                                    FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
-                                }
+                                //implement floodfill
+                                //floodFill(hdc, points[0].x, points[0].y,toolsHigth, RGB(144,244,522));
                                 break;
                             case 8:     /// Curve
-
-                                cout << "Please choose the algorithm to draw your spline\n";
-                                R = (points[1].x - points[0].x) * (points[1].x - points[0].x) +
-                                    (points[1].y - points[0].y) * (points[1].y - points[0].y);
-                                if (choice2 == 1) {
-                                    FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
-                                } else if (choice2 == 2) {
-
-                                } else {
-                                    FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
-                                }
+                                cardinalSplines(points, target, 1, drawingColor);
                                 break;
                             case 9:     /// Clip
-                                //"1-With lines, 2-With Circles\n";
-                                R = (points[1].x - points[0].x) * (points[1].x - points[0].x) +
-                                    (points[1].y - points[0].y) * (points[1].y - points[0].y);
-                                if (choice2 == 1) {
-                                    FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
-                                } else if (choice2 == 2) {
-
-                                } else {
-                                    FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
+                                if(choice2 == 1)//rectangular clipping
+                                {
+                                    if(choice3 == 1){//clip point
+                                        clipPoint(points[4].x, points[4].y, points[0].x, points[1].y, points[2].x, points[3].y, drawingColor);
+                                    }
+                                    else if(choice3 == 2)// clip line
+                                    {
+                                        clipLine(points[4].x, points[4].y, points[5].x, points[5].y, points[0].x, points[1].y, points[2].x, points[3].y, drawingColor);
+                                    }
+                                    else if(choice3 == 3)//clip polygon
+                                    {
+                                        clipPolygon(points+4, target-4, points[0].x, points[1].y, points[2].x, points[3].y, drawingColor);
+                                    }
                                 }
+                                else if (choice2 == 2)//square clipping
+                                {
+                                    dist = sqrt((points[1].x - points[0].x) * (points[1].x - points[0].x) +
+                                             (points[1].y - points[0].y) * (points[1].y - points[0].y));
+
+                                    if(choice3 == 1){//clip point
+                                        clipPoint(points[2].x, points[2].y, points[0].x, points[0].y, points[0].x + dist, points[0].y + dist, drawingColor);
+                                    }
+                                    else if(choice3 == 2)// clip line
+                                    {
+                                        clipLine(points[2].x, points[2].y, points[3].x, points[3].y, points[0].x, points[0].y, points[0].x + dist, points[0].y + dist, drawingColor);
+                                    }
+                                }
+                                else if(choice2 == 3)//circular clipping
+                                {
+                                    R = sqrt((points[1].x - points[0].x) * (points[1].x - points[0].x) +
+                                             (points[1].y - points[0].y) * (points[1].y - points[0].y));
+                                    if(choice3 == 1)
+                                    {
+                                        clipPointFromCircle(points[2].x, points[2].y, points[0].x, points[0].y, R, drawingColor);
+                                    }
+                                    else if(choice3 == 2)
+                                    {
+                                        clipLineFromCircle(points[2].x, points[2].y,points[3].x, points[3].y, points[0].x, points[0].y, R, drawingColor);
+                                    }
+                                }
+
                                 break;
                             default:
                                 target = 0;
