@@ -16,15 +16,14 @@
 #include <gl\GLu.h>
 #include <iostream>
 
-GLfloat* getColor(LPARAM lp) {
+//glVertex2d(
+
+
+void getColor(int x, int y, GLfloat *color) {
     /// Get Color
-    GLfloat *color;
-    glReadPixels(LOWORD(lp), HIWORD(lp), 1, 1, GL_RGBA, GL_FLOAT, color);
-    return color;
-    //cout << "Color Changed to " << "R = " << drawingColor[0] << " B = " << drawingColor[1] << " G = " << drawingColor[2]
-    //     << '\n';
-    //cout.flush();
-    //MessageBeep(MB_ICONASTERISK);
+    glReadPixels(x, y, 1, 1, GL_RGBA, GL_FLOAT, color);
+    std::cout << color[0] << ' ' << color[1] << ' ' << color[2] << '\t';
+
 }
 
 struct Point {
@@ -391,20 +390,19 @@ inline void drawEllipse(int xc, int yc, int A, int B, GLfloat *drawingColor) {
     int x = 0;
     double y = B;
     Draw4Points(xc, yc, 0, B);
-    while(x*B*B < y*A*A)
-    {   x++;
-        y = B * sqrt(1.0 - ((double)x*x)/(A*A));
+    while (x * B * B < y * A * A) {
+        x++;
+        y = B * sqrt(1.0 - ((double) x * x) / (A * A));
         Draw4Points(xc, yc, x, Round(y));
     }
 
     int y1 = 0;
     double x1 = A;
-    Draw4Points(xc,yc,A,0);
-    while(x1*B*B > y1*A*A)
-    {
+    Draw4Points(xc, yc, A, 0);
+    while (x1 * B * B > y1 * A * A) {
         y1++;
-        x1 = A*sqrt(1.0 - ((double)y1*y1) / (B*B));
-        Draw4Points(xc,yc,Round(x1),y1);
+        x1 = A * sqrt(1.0 - ((double) y1 * y1) / (B * B));
+        Draw4Points(xc, yc, Round(x1), y1);
     }
 
     glEnd();
@@ -452,14 +450,14 @@ inline void drawEllipseMidPoint(int xc, int yc, int A, int B, GLfloat *drawingCo
     int y = -B;
     int d = -4 * Asq * B + 4 * Bsq + Asq;
 
-    Draw4Points( xc, yc, x, y);
+    Draw4Points(xc, yc, x, y);
     while (abs(x) * Bsq < abs(y) * Asq) {
         if (d < 0) {
             d += 8 * Bsq * x + 12 * Bsq + 8 * Asq * y + 8 * Asq;
             x++;
             y++;
         } else {
-            d += 8 * Bsq * x + 12 * Bsq ;
+            d += 8 * Bsq * x + 12 * Bsq;
             x++;
         }
 
@@ -514,10 +512,9 @@ inline void cardinalSplines(Vector Points[], int n, double c, GLfloat *c1) {
     }
 }
 
-inline void cardinalSplines(Point* points, int n, double c, GLfloat *c1) {
+inline void cardinalSplines(Point *points, int n, double c, GLfloat *c1) {
     Vector pointsVector[n];
-    for(int i=0; i<n; i++)
-    {
+    for (int i = 0; i < n; i++) {
         pointsVector[i] = Vector(points[i].x, points[i].y);
     }
     cardinalSplines(pointsVector, n, c, c1);

@@ -25,8 +25,14 @@ const int bufferSize = 15;
 const int screenWidth = 800;
 const int screenHeight = 600 - toolsHigth;
 GLfloat drawingColor[] = {1.0f, 1.0f, 0.0f};
+// defaults
+GLfloat Green[] = {0, 1, 0};
+GLfloat Black[] = {0, 0, 0};
+GLfloat White[] = {1, 1, 1};
+GLfloat Red[] = {1, 0, 0};
+
 RECT currColor = {340, 10, 383, 50};
-RECT DefaultON = {350, 68, 373, 90};
+RECT Checkconsle = {350, 68, 373, 90};
 GLfloat backgroundColor[] = {1.0f, 1.0f, 0.0f};
 
 /// create menu
@@ -34,7 +40,6 @@ HMENU hmenu;
 #define Save_File 1
 #define Load_File 2
 #define Clear_Screen 454
-#define Default 222
 #define WHITE_BK 11111
 
 void AddMenu(HWND hwnd) {
@@ -49,7 +54,6 @@ void AddMenu(HWND hwnd) {
     AppendMenuW(FileMenu, MF_STRING, Load_File, L"Load File");
 
     AppendMenuW(ToolsMenu, MF_STRING, Clear_Screen, L"Clear Screen");
-    AppendMenuW(ToolsMenu, MF_STRING, Default, L"Default Algorithms");
     AppendMenuW(ToolsMenu, MF_STRING, WHITE_BK, L"White Background");
 
     SetMenu(hwnd, hmenu);
@@ -117,9 +121,6 @@ void LoadFile(HWND hwnd) {
     cout.flush();
 
     MessageBeep(MB_ICONASTERISK);
-
-//    for errors sound
-//    MessageBeep(MB_ICONHAND);
 }
 
 /// Choose Color from pallet "e. Give me option to choose shape color before drawing from menu"
@@ -174,7 +175,6 @@ void drawBlock(int x1, int y1, int x3, int y3, vector<vector<int>> &buttons, GLf
 
 int chooseTool(int x, int y, vector<vector<int>> &buttons) {
     int i = 0;
-    cout << x << ' ' << y << '\n';
     while (i < buttons.size() &&
            !(buttons[i][0] < x && buttons[i][1] > x && buttons[i][2] < y && buttons[i][3] > y)) {
         i++;
@@ -210,15 +210,6 @@ const int NshapesHigth = 2;
 const int shapesright = shapesWidth + 10;
 const int shapesdown = shapesHigth + 5;
 const int shapesNum = 10;
-const LPCTSTR shapes[shapesNum] = {reinterpret_cast<LPCTSTR const>(L"Line"), reinterpret_cast<LPCTSTR const>(L"Square"),
-                                   reinterpret_cast<LPCTSTR const>(L"Rectangle"),
-                                   reinterpret_cast<LPCTSTR const>(L"Ellipse"),
-                                   reinterpret_cast<LPCTSTR const>(L"Circle"),
-                                   reinterpret_cast<LPCTSTR const>(L"Fill Circle"),
-                                   reinterpret_cast<LPCTSTR const>(L"Fill"),
-                                   reinterpret_cast<LPCTSTR const>(L"FloodFill"),
-                                   reinterpret_cast<LPCTSTR const>(L"Curve"),
-                                   reinterpret_cast<LPCTSTR const>(L"Clip")};
 vector<vector<int>> shapeButtons;
 
 void updateGUI() {
@@ -245,9 +236,6 @@ void updateGUI() {
 
 void drawOnShapeButtons() {
     // for testing a visuals
-    GLfloat Black[] = {0, 0, 0};
-    GLfloat White[] = {1, 1, 1};
-    GLfloat Red[] = {1, 0, 0};
     /// Line
     for (int i = 0; i < 4; i++)
         drawLine(shapeButtons[0][0] + 10 - i, shapeButtons[0][2] + 8, shapeButtons[0][1] - 5 - i,
@@ -353,17 +341,20 @@ void drawOnShapeButtons() {
                  toolsShading);
 
     /// Default on button (off by default with color Red)
-    GLfloat ptr[] = {1, 0, 0};
-    FillRectangleWithHermite(DefaultON.left, DefaultON.top, DefaultON.right, DefaultON.bottom,
+    GLfloat ptr[] = {0, 1, 0};
+    FillRectangleWithHermite(Checkconsle.left, Checkconsle.top, Checkconsle.right, Checkconsle.bottom,
                              ptr);
+
     for (int i = 1; i < 4; i++) {
-        drawRectangle(DefaultON.left - i, DefaultON.top - i, DefaultON.right + i, DefaultON.bottom + i, toolsShading);
+        drawRectangle(Checkconsle.left - i, Checkconsle.top - i, Checkconsle.right + i, Checkconsle.bottom + i,
+                      toolsShading);
     }
 
     updateGUI();
 }
 
 void addShapesButtons() {
+    ;
     int i = 0;
     GLfloat BBK[] = {1.0, 1.0, 1.0};
     for (int y = 0; y < NshapesHigth; y++) {
@@ -377,7 +368,6 @@ void addShapesButtons() {
 }
 
 
-
 /// clear screen "f. Implement item to clear screen from shapes"
 void clearScreen() {
     /// global background color
@@ -387,18 +377,12 @@ void clearScreen() {
     MessageBeep(MB_ICONASTERISK);
 }
 
-void changeBackground(HWND hwnd, int r, int g, int b) {
-    HBRUSH brush = CreateSolidBrush(RGB(r, g, b));
-    SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG_PTR) brush);
-}
-
 HGLRC InitOpenGl(HDC hdc) {
     PIXELFORMATDESCRIPTOR pfd = {
             sizeof(PIXELFORMATDESCRIPTOR),   // size of this pfd
             1,                     // version number
-            PFD_DRAW_TO_WINDOW |   // support window
-            PFD_SUPPORT_OPENGL,  // support OpenGL
-//            PFD_DOUBLEBUFFER,      // double buffered
+            PFD_DRAW_TO_WINDOW |    // support window
+            PFD_SUPPORT_OPENGL,             // support OpenGL
             PFD_TYPE_RGBA,         // RGBA type
             24,                    // 24-bit color depth
             0, 0, 0, 0, 0, 0,      // color bits ignored
@@ -436,22 +420,14 @@ void EndOpenGl(HGLRC glrc) {
     wglDeleteContext(glrc);
 }
 
-
-enum ShapeType {
-    CircleS, RectangleS, EllipseS, SquareS, PolygonS, None
-};
-
-LRESULT WINAPI
-MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
+LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
     static HDC hdc;
     static HGLRC glrc;
     static int x, y, choice, choice2, choice3;
     static Point points[bufferSize];
     static bool inProcess = false;
-    static bool defaultAlgorithms = false;
     static int target, counter;
     static int n;
-    static ShapeType lastShape;
     static double R, A, B;
     static int xc, yc;
     static int quarter, num, dist;
@@ -472,28 +448,26 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                     clearScreen();
                     break;
                 case WHITE_BK: {
-                    backgroundColor[0] = 1.0f;
-                    backgroundColor[1] = 1.0f;
-                    backgroundColor[2] = 1.0f;
-                    cout << "Background Color White\n";
+                    backgroundColor[0] = White[0];
+                    backgroundColor[0] = White[1];
+                    backgroundColor[0] = White[2];
                     clearScreen();
+                    cout << "Background Color is White\n";
                     break;
                 }
                 case Shape_choice:
-                    cout << "shapes\n";
-                    cout.flush();
+                    FillRectangleWithHermite(Checkconsle.left, Checkconsle.top, Checkconsle.right, Checkconsle.bottom,
+                                             Red);
+                    SetCursor(LoadCursorA(NULL, IDC_WAIT));
+                    drawRectangle(shapeButtons[choice][0] + 2, shapeButtons[choice][2] + 2, shapeButtons[choice][1] - 2,
+                                  shapeButtons[choice][3] - 2, White);
                     choice = lp;
-                    if (defaultAlgorithms == 1) {
-                        choice2 = 1;
-                    }
                     switch (choice) {
                         case 0 :        /// Line
                             inProcess = true;
                             target = 2;
                             cout << "1-DDA\n2-MidPoint\n3-parametric\n";
                             cin >> choice2;
-                            cout << "here\n";
-
                             cout << "Please click on two points for the line\n";
                             break;
                         case 1:       /// Square
@@ -512,10 +486,7 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                             inProcess = true;
                             target = 3;
                             cout << "1-Direct\n";
-                            if (defaultAlgorithms == 1) {
-                                cout << "Please click on three points for the ellipse\n";
-                                break;
-                            }
+
                             cout << "2-Polar\n3-MidPoint\n";
                             cin >> choice2;
 
@@ -526,11 +497,7 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                             cout << "Please choose the algorithm to draw your Circle\n";
                             cout << "1- Direct\n";
                             target = 2;
-                            if (defaultAlgorithms == 1) {
-                                cout << "Please click on two points for the circle\n";
-                                break;
-                            }
-                            cout << "2-Polar\n3- Iterative polar\n4- Midpoint\n5- Modified Midpoint\n";
+                            cout << "2- Polar\n3- Iterative polar\n4- Midpoint\n5- Modified Midpoint\n";
                             cin >> choice2;
 
                             cout << "Please click on two points for the circle\n";
@@ -540,11 +507,6 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                             target = 0;
                             cout << "1-With lines\n";
 
-                            /*if (defaultAlgorithms == 1) {
-                                cout << "Please click on two points for the circle\n";
-                                break;
-                            }
-                             */
                             cout << "2-With Circles\n";
                             cin >> choice2;
 
@@ -564,21 +526,10 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                             inProcess = true;
                             target = 1;
                             cout << "Please click on a point to start the floodfill\n";
-                            /*
-                              if (defaultAlgorithms == 1) {
-                                cout << "Please click on two points for the circle\n";
-                                break;
-                            }
-                            */
                             break;
                         case 8:     /// Curve
                             inProcess = true;
                             cout << "Please choose the number of points you want to be included in your spline\n";
-                            /*if (defaultAlgorithms == 1) {
-                                cout << "Please click on two points for the circle\n";
-                                break;
-                            }
-                            */
                             cin >> target;
                             cout << "Please click on the points\n";
                             break;
@@ -586,37 +537,26 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                             inProcess = true;
                             target = 2;
                             cout << "1- Rectangular\n";
-                            /*
-                             * if (defaultAlgorithms == 1) {
-                                cout << "Please click on two points for the circle\n";
-                                break;
-                            }
-                            */
                             cout << "2- square\n3- circle\n";
                             cin >> choice2;
 
 
-                            if(choice2 == 1)
-                            {
+                            if (choice2 == 1) {
                                 target = 4;
                                 cout << "Please enter the type of shape you want to clip\n";
                                 cout << "1-Point\n2-Line\n3-Polygon\n";
                                 cin >> choice3;
 
 
-                                if(choice3 == 1){
-                                    target +=1;
+                                if (choice3 == 1) {
+                                    target += 1;
                                     cout << "Please draw your rectangle then draw ";
                                     cout << "your point\n";
-                                }
-                                else if(choice3 == 2)
-                                {
+                                } else if (choice3 == 2) {
                                     target += 2;
                                     cout << "Please draw your rectangle then draw ";
                                     cout << "your line\n";
-                                }
-                                else if(choice3 == 3)
-                                {
+                                } else if (choice3 == 3) {
                                     cout << "Please enter the number of sides of the polygon\n";
                                     cin >> num;
                                     target += num;
@@ -624,37 +564,31 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                                     cout << "your polygon\n";
                                 }
 
-                                cout << "You draw the rectangle by selecting the left side, then top, then right, the bottom\n";
-                            }
-                            else if(choice2 == 2) //square clipping and circle clipping
+                                cout
+                                        << "You draw the rectangle by selecting the left side, then top, then right, the bottom\n";
+                            } else if (choice2 == 2) //square clipping and circle clipping
                             {
 
                                 target = 2;
                                 cout << "Please enter the type of shape you want to clip\n";
                                 cout << "1-Point\n2-Line\n";
                                 cin >> choice3;
-                                if(choice3 == 1){
+                                if (choice3 == 1) {
                                     cout << "Please draw your square then draw your point\n";
-                                    target +=1;
-                                }
-                                else if(choice3 == 2)
-                                {
+                                    target += 1;
+                                } else if (choice3 == 2) {
                                     cout << "Please draw your square then draw your line\n";
                                     target += 2;
                                 }
-                            }
-                            else if(choice2 == 3)
-                            {
+                            } else if (choice2 == 3) {
                                 target = 2;
                                 cout << "Please enter the type of shape you want to clip\n";
                                 cout << "1-Point\n2-Line\n";
                                 cin >> choice3;
-                                if(choice3 == 1){
+                                if (choice3 == 1) {
                                     cout << "Please draw your circle then draw your point\n";
-                                    target +=1;
-                                }
-                                else if(choice3 == 2)
-                                {
+                                    target += 1;
+                                } else if (choice3 == 2) {
                                     cout << "Please draw your circle then draw your line\n";
                                     target += 2;
                                 }
@@ -666,20 +600,12 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                             target = 0;
                             break;
                     }
+                    SetCursor(LoadCursorA(NULL, IDC_CROSS));
+                    FillRectangleWithHermite(Checkconsle.left, Checkconsle.top, Checkconsle.right, Checkconsle.bottom,
+                                             Green);
+                    drawRectangle(shapeButtons[choice][0] + 2, shapeButtons[choice][2] + 2, shapeButtons[choice][1] - 2,
+                                  shapeButtons[choice][3] - 2, Black);
                     cout.flush();
-                    break;
-                case Default:
-                    if (defaultAlgorithms == 0) {
-                        defaultAlgorithms = 1;
-                        GLfloat ptr[] = {0, 1, 0};
-                        FillRectangleWithHermite(DefaultON.left, DefaultON.top, DefaultON.right, DefaultON.bottom,
-                                                 ptr);
-                    } else {
-                        defaultAlgorithms = 0;
-                        GLfloat ptr[] = {1, 0, 0};
-                        FillRectangleWithHermite(DefaultON.left, DefaultON.top, DefaultON.right, DefaultON.bottom,
-                                                 ptr);
-                    }
                     MessageBeep(MB_ICONASTERISK);
                     break;
             }
@@ -720,14 +646,12 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                     }
                 }
             } else {
-                // TODO all chices
                 if (inProcess) {
-                    if(target != counter)
+                    if (target != counter)
                         points[counter++] = Point(x, y);
 
                     if (counter == target) {
                         counter = 0;
-                        inProcess = false;
 
                         switch (choice) {
                             case 0 :        /// Line
@@ -773,7 +697,7 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
 
                                 //"1-Direct, 2-Polar, 3- Iterative polar, 4-Midpoint, 5-Modified Midpoint";
                                 R = sqrt((points[1].x - points[0].x) * (points[1].x - points[0].x) +
-                                    (points[1].y - points[0].y) * (points[1].y - points[0].y));
+                                         (points[1].y - points[0].y) * (points[1].y - points[0].y));
                                 if (choice2 == 1) {
                                     drawCircle(points[0].x, points[0].y, R, drawingColor);
                                 } else if (choice2 == 2) {
@@ -804,12 +728,10 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                                 break;
                             case 6:     /// Convex and Non Convex Filling
 
-                                drawPolygon(points, target , drawingColor);
-                                if(choice2 == 1)
-                                {
-                                    FillPolygonC(points, target,drawingColor);
-                                }
-                                else{
+                                drawPolygon(points, target, drawingColor);
+                                if (choice2 == 1) {
+                                    FillPolygonC(points, target, drawingColor);
+                                } else {
                                     FillPolygon(points, target, drawingColor);
                                 }
 
@@ -823,44 +745,43 @@ MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                                 cardinalSplines(points, target, 1, drawingColor);
                                 break;
                             case 9:     /// Clip
-                                if(choice2 == 1)//rectangular clipping
+                                if (choice2 == 1)//rectangular clipping
                                 {
-                                    if(choice3 == 1){//clip point
-                                        clipPoint(points[4].x, points[4].y, points[0].x, points[1].y, points[2].x, points[3].y, drawingColor);
-                                    }
-                                    else if(choice3 == 2)// clip line
+                                    if (choice3 == 1) {//clip point
+                                        clipPoint(points[4].x, points[4].y, points[0].x, points[1].y, points[2].x,
+                                                  points[3].y, drawingColor);
+                                    } else if (choice3 == 2)// clip line
                                     {
-                                        clipLine(points[4].x, points[4].y, points[5].x, points[5].y, points[0].x, points[1].y, points[2].x, points[3].y, drawingColor);
-                                    }
-                                    else if(choice3 == 3)//clip polygon
+                                        clipLine(points[4].x, points[4].y, points[5].x, points[5].y, points[0].x,
+                                                 points[1].y, points[2].x, points[3].y, drawingColor);
+                                    } else if (choice3 == 3)//clip polygon
                                     {
-                                        clipPolygon(points+4, target-4, points[0].x, points[1].y, points[2].x, points[3].y, drawingColor);
+                                        clipPolygon(points + 4, target - 4, points[0].x, points[1].y, points[2].x,
+                                                    points[3].y, drawingColor);
                                     }
-                                }
-                                else if (choice2 == 2)//square clipping
+                                } else if (choice2 == 2)//square clipping
                                 {
                                     dist = sqrt((points[1].x - points[0].x) * (points[1].x - points[0].x) +
-                                             (points[1].y - points[0].y) * (points[1].y - points[0].y));
+                                                (points[1].y - points[0].y) * (points[1].y - points[0].y));
 
-                                    if(choice3 == 1){//clip point
-                                        clipPoint(points[2].x, points[2].y, points[0].x, points[0].y, points[0].x + dist, points[0].y + dist, drawingColor);
-                                    }
-                                    else if(choice3 == 2)// clip line
+                                    if (choice3 == 1) {//clip point
+                                        clipPoint(points[2].x, points[2].y, points[0].x, points[0].y,
+                                                  points[0].x + dist, points[0].y + dist, drawingColor);
+                                    } else if (choice3 == 2)// clip line
                                     {
-                                        clipLine(points[2].x, points[2].y, points[3].x, points[3].y, points[0].x, points[0].y, points[0].x + dist, points[0].y + dist, drawingColor);
+                                        clipLine(points[2].x, points[2].y, points[3].x, points[3].y, points[0].x,
+                                                 points[0].y, points[0].x + dist, points[0].y + dist, drawingColor);
                                     }
-                                }
-                                else if(choice2 == 3)//circular clipping
+                                } else if (choice2 == 3)//circular clipping
                                 {
                                     R = sqrt((points[1].x - points[0].x) * (points[1].x - points[0].x) +
                                              (points[1].y - points[0].y) * (points[1].y - points[0].y));
-                                    if(choice3 == 1)
-                                    {
-                                        clipPointFromCircle(points[2].x, points[2].y, points[0].x, points[0].y, R, drawingColor);
-                                    }
-                                    else if(choice3 == 2)
-                                    {
-                                        clipLineFromCircle(points[2].x, points[2].y,points[3].x, points[3].y, points[0].x, points[0].y, R, drawingColor);
+                                    if (choice3 == 1) {
+                                        clipPointFromCircle(points[2].x, points[2].y, points[0].x, points[0].y, R,
+                                                            drawingColor);
+                                    } else if (choice3 == 2) {
+                                        clipLineFromCircle(points[2].x, points[2].y, points[3].x, points[3].y,
+                                                           points[0].x, points[0].y, R, drawingColor);
                                     }
                                 }
 
@@ -900,13 +821,14 @@ int APIENTRY WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh) {
     wc.lpszClassName = reinterpret_cast<LPCSTR>(L"MyClass");
     wc.lpszMenuName = NULL;
     wc.style = CS_HREDRAW | CS_VREDRAW;
+    wc.hCursor = LoadCursorA(NULL, IDC_CROSS);
     RegisterClass(&wc);
     HWND hwnd = CreateWindow((LPCSTR) L"MyClass", (LPCSTR) "Paintit",
                              WS_OVERLAPPED | WS_MINIMIZEBOX | WS_SYSMENU, 0, 0, screenWidth, screenHeight,
                              NULL, NULL, hinst,
                              0);
     ShowWindow(hwnd, nsh);
-    SendMessage(hwnd, SHOW_TOOLS, NULL, NULL);        /// show all the tools
+    SendMessage(hwnd, SHOW_TOOLS, 1, 1);        /// show all the tools
     UpdateWindow(hwnd);
 
     MSG msg;
