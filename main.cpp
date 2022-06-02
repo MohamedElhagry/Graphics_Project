@@ -33,7 +33,7 @@ GLfloat White[] = {1, 1, 1};
 GLfloat Red[] = {1, 0, 0};
 RECT currColor = {340, 10, 383, 50};
 RECT Checkconsle = {350, 68, 373, 90};
-GLfloat backgroundColor[] = {0.9f, 0.9f, 0.9f};
+GLfloat backgroundColor[] = {0.0f, 0.0f, 0.0f};
 
 /// create menu
 HMENU hmenu;
@@ -411,7 +411,7 @@ void AdjustWindowFor2D(HDC hdc, int w, int h) {
     gluOrtho2D(0, w, h, 0);
     glMatrixMode(GL_MODELVIEW);
     glViewport(0, 0, w, h);
-    glClearColor(0, 0, 0, 0);
+    glClearColor(backgroundColor[0] * 255, backgroundColor[1] * 255, backgroundColor[2] * 255, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -449,8 +449,8 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                     backgroundColor[0] = White[0];
                     backgroundColor[1] = White[1];
                     backgroundColor[2] = White[2];
-                    clearScreen();
-                    cout << "Background Color is White\n";
+                    FillScreen(0, screenWidth, toolsHigth + 1, screenHeight, backgroundColor);
+                    cout << "Background Color is White" << endl;
                     break;
                 }
                 case Shape_choice:
@@ -623,8 +623,6 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
             // add shapes
             addShapesButtons();
 
-            // background color
-            clearScreen();
             break;
         case WM_SIZE:
             AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));
