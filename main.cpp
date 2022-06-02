@@ -98,7 +98,7 @@ void SaveFile(HWND hwnd) {
 }
 
 void LoadFile(HWND hwnd) {
-    glactivate();
+    glactivation();
 
     RECT rect;
     GetWindowRect(hwnd, &rect);
@@ -117,7 +117,7 @@ void LoadFile(HWND hwnd) {
     }
 
     myfile.close();
-    gldeactivate();
+    gldeactivation();
 
     cout << "Loaded from file.txt\n";
     cout.flush();
@@ -128,7 +128,7 @@ void LoadFile(HWND hwnd) {
 /// Choose Color from pallet "e. Give me option to choose shape color before drawing from menu"
 void FillScreen(int xs, int xe, int ys, int ye, GLfloat *C) {
 
-    glactivate();
+    glactivation();
     glColor3f(C[0], C[1], C[2]);
 
     for (int i = ys; i < ye; i++) {
@@ -137,7 +137,7 @@ void FillScreen(int xs, int xe, int ys, int ye, GLfloat *C) {
         }
     }
 
-    gldeactivate();
+    gldeactivation();
 }
 
 const int palletX = 10;
@@ -614,7 +614,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
             AddMenu(hwnd);
             break;
         case SHOW_TOOLS:
-            glactivate();
+            glactivation();
 
             // Color pallet
             addColorsSection();
@@ -622,7 +622,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
             // add shapes
             addShapesButtons();
 
-            gldeactivate();
+            gldeactivation();
             break;
         case WM_SIZE:
             AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));

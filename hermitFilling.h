@@ -13,7 +13,7 @@
 #include <gl\GLu.h>
 
 inline void DrawHermiteCurve(Point p1, Point T1, Point p2, Point T2, GLfloat *drawingColor) {
-    glactivate();
+    glactivation();
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
     double a0 = p1.x,
             a1 = T1.x,
@@ -29,7 +29,7 @@ inline void DrawHermiteCurve(Point p1, Point T1, Point p2, Point T2, GLfloat *dr
         double y = b0 + b1 * t + b2 * t2 + b3 * t3;
         glVertex2d(round(x), round(y));
     }
-    gldeactivate();
+    gldeactivation();
 }
 
 inline void FillRectangleWithHermite(int x1, int y1, int x3, int y3, GLfloat *drawingColor) {

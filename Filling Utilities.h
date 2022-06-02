@@ -49,12 +49,12 @@ inline void floodFill(GLint x, GLint y, int toolsHeight, int screenHeight, int s
 
             cout << x << ' ' << y << ' ' << filled[x][y] << endl;
 
-            glactivate();
+            glactivation();
             glColor3f(fill[0], fill[1], fill[2]);
 
             glVertex2d(x, y);
 
-            gldeactivate();
+            gldeactivation();
 
             filled[x][y] = true;
             stack.push(Point(x, y - 1));

@@ -51,12 +51,12 @@ inline Point HIntersect(double xs, double ys, double xe, double ye, int y) {
 }
 
 inline void clipPoint(int x, int y, int left, int top, int right, int bot, GLfloat *drawingColor) {
-    glactivate();
+    glactivation();
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
     if (x >= left && x <= right && y >= top && y <= bot) {
         glVertex2d(x, y);
     }
-    gldeactivate();
+    gldeactivation();
     GLfloat borderColor[] = {0.0f, 1.0f, 1.0f};
     drawRectangle(left, top, right, bot, borderColor);
 }

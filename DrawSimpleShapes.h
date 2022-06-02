@@ -19,14 +19,14 @@
 bool glactive = 0;
 //glVertex2d(
 
-void glactivate() {
+void glactivation() {
     if (!glactive)
         glBegin(GL_POINTS);
     glactive = 1;
 
 }
 
-void gldeactivate() {
+void gldeactivation() {
     if (glactive) {
         glEnd();
         glFlush();
@@ -98,11 +98,11 @@ inline int Round(double x) {
 }
 
 inline void drawPoint(int x, int y, GLfloat *drawingColor) {
-    glactivate();
+    glactivation();
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
     glVertex2d(x, y);
 
-    gldeactivate();
+    gldeactivation();
 }
 
 
@@ -115,7 +115,7 @@ inline void drawLine(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
 }
 
 inline void drawLineDDA(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
-    glactivate();
+    glactivation();
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
 
     int dx = x2 - x1;
@@ -139,11 +139,11 @@ inline void drawLineDDA(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
             glVertex2d(x, y);
         }
     }
-    gldeactivate();
+    gldeactivation();
 }
 
 inline void drawLineMidPoint(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
-    glactivate();
+    glactivation();
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
 
     if (x1 > x2) {
@@ -230,11 +230,11 @@ inline void drawLineMidPoint(int x1, int y1, int x2, int y2, GLfloat *drawingCol
 
         }
     }
-    gldeactivate();
+    gldeactivation();
 }
 
 inline void drawLineParametric(int x1, int y1, int x2, int y2, GLfloat *drawingColor) {
-    glactivate();
+    glactivation();
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
 
     int dx = x2 - x1;
@@ -247,7 +247,7 @@ inline void drawLineParametric(int x1, int y1, int x2, int y2, GLfloat *drawingC
         glVertex2d(Round(x), Round(y));
     }
 
-    gldeactivate();
+    gldeactivation();
 }
 
 //Circle algorithms
@@ -265,7 +265,7 @@ inline void draw8Points(int xc, int yc, int x, int y) {
 
 inline void drawCircle(int xc, int yc, int R, GLfloat *drawingColor) {
 
-    glactivate();
+    glactivation();
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
     int x = 0;
     double y = R;
@@ -276,12 +276,12 @@ inline void drawCircle(int xc, int yc, int R, GLfloat *drawingColor) {
         draw8Points(xc, yc, x, Round(y));
     }
 
-    gldeactivate();
+    gldeactivation();
 }
 
 inline void drawCirclePolar(int xc, int yc, int R, GLfloat *drawingColor) {
 
-    glactivate();
+    glactivation();
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
     double x = R;
     double y = 0;
@@ -295,12 +295,12 @@ inline void drawCirclePolar(int xc, int yc, int R, GLfloat *drawingColor) {
         draw8Points(xc, yc, Round(x), Round(y));
     }
 
-    gldeactivate();
+    gldeactivation();
 }
 
 inline void drawCirclePolarIterative(int xc, int yc, int R, GLfloat *drawingColor) {
 
-    glactivate();
+    glactivation();
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
     double x = R;
     double y = 0;
@@ -315,12 +315,12 @@ inline void drawCirclePolarIterative(int xc, int yc, int R, GLfloat *drawingColo
         draw8Points(xc, yc, Round(x), Round(y));
     }
 
-    gldeactivate();
+    gldeactivation();
 }
 
 inline void drawCircleMidPoint(int xc, int yc, int R, GLfloat *drawingColor) {
 
-    glactivate();
+    glactivation();
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
 
     int x = 0;
@@ -343,12 +343,12 @@ inline void drawCircleMidPoint(int xc, int yc, int R, GLfloat *drawingColor) {
     }
 
 
-    gldeactivate();
+    gldeactivation();
 }
 
 inline void drawCircleMidPointModified(int xc, int yc, int R, GLfloat *drawingColor) {
 
-    glactivate();
+    glactivation();
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
 
     int x = 0;
@@ -376,7 +376,7 @@ inline void drawCircleMidPointModified(int xc, int yc, int R, GLfloat *drawingCo
     }
 
 
-    gldeactivate();
+    gldeactivation();
 }
 
 
@@ -390,7 +390,7 @@ inline void Draw4Points(int xc, int yc, int x, int y) {
 }
 
 inline void drawEllipse(int xc, int yc, int A, int B, GLfloat *drawingColor) {
-    glactivate();
+    glactivation();
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
 
     int x = 0;
@@ -411,11 +411,11 @@ inline void drawEllipse(int xc, int yc, int A, int B, GLfloat *drawingColor) {
         Draw4Points(xc, yc, Round(x1), y1);
     }
 
-    gldeactivate();
+    gldeactivation();
 }
 
 inline void drawEllipsePolar(int xc, int yc, int A, int B, GLfloat *drawingColor) {
-    glactivate();
+    glactivation();
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
 
     double x = A;
@@ -440,11 +440,11 @@ inline void drawEllipsePolar(int xc, int yc, int A, int B, GLfloat *drawingColor
         Draw4Points(xc, yc, Round(x), Round(y));
     }
 
-    gldeactivate();
+    gldeactivation();
 }
 
 inline void drawEllipseMidPoint(int xc, int yc, int A, int B, GLfloat *drawingColor) {
-    glactivate();
+    glactivation();
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
 
     int Asq = A * A;
@@ -468,7 +468,7 @@ inline void drawEllipseMidPoint(int xc, int yc, int A, int B, GLfloat *drawingCo
         Draw4Points(xc, yc, x, y);
     }
 
-    gldeactivate();
+    gldeactivation();
 }
 
 inline void drawRectangle(int x1, int y1, int x3, int y3, GLfloat *c) {
@@ -481,7 +481,7 @@ inline void drawRectangle(int x1, int y1, int x3, int y3, GLfloat *c) {
 }
 
 inline void DrawHermiteCurvee(Vector p1, Vector T1, Vector p2, Vector T2, GLfloat *drawingColor) {
-    glactivate();
+    glactivation();
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
     double a0 = p1[0],
             a1 = T1[0],
@@ -497,7 +497,7 @@ inline void DrawHermiteCurvee(Vector p1, Vector T1, Vector p2, Vector T2, GLfloa
         double y = b0 + b1 * t + b2 * t2 + b3 * t3;
         glVertex2d(round(x), round(y));
     }
-    gldeactivate();
+    gldeactivation();
 }
 
 inline void cardinalSplines(Vector Points[], int n, double c, GLfloat *c1) {
