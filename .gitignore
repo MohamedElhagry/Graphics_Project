@@ -1,2 +1,5 @@
 # Project exclude paths
+/cmake-build-debug/.cmake/
+/cmake-build-debug/CMakeFiles/
+/cmake-build-debug/Testing/
 /CMakeLists.txt
