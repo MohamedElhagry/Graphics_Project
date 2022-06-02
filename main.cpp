@@ -740,7 +740,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                             case 7:     /// FloodFill
 
                                 //implement floodfill
-                                floodFill(points[0].x, points[0].y, toolsHigth, screenHeight + toolsHigth,
+                                floodFill(x, y, toolsHigth, screenHeight + toolsHigth,
                                           screenWidth, drawingColor, drawingColor);
                                 break;
                             case 8:     /// Curve

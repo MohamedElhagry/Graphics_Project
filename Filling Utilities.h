@@ -21,7 +21,7 @@ inline bool sameCol(GLfloat *col1, GLfloat *col2) {
     return true;
 }
 
-inline void floodFill(int x, int y, int toolsHeight, int screenHeight, int screenWidth, GLfloat *borderCol,
+inline void floodFill( GLint x, GLint y, int toolsHeight, int screenHeight, int screenWidth, GLfloat *borderCol,
                       GLfloat *fill) {
     stack<Point> stack;
     stack.push(Point(x, y));
@@ -40,16 +40,14 @@ inline void floodFill(int x, int y, int toolsHeight, int screenHeight, int scree
 
         if (!filled[x][y] && (x >= 0) && (x < screenWidth && (y >= toolsHeight) && (y < screenHeight))) {
 
-            GLfloat col[3];
+            GLfloat *color = getPixelColor(x, y);
 
-            getColor(x, (screenHeight - y), col);
+            cout << color[0] << ' ' << color[1] << ' ' << color[2] << endl;
 
-            cout << col[0] << ' ' << col[1] << ' ' << col[2] << endl;
-
-            if (sameCol(col, borderCol))
+            if (sameCol(color, borderCol))
                 continue;
 
-//            cout << x << ' ' << y << ' ' << filled[x][y] << endl;
+            cout << x << ' ' << y << ' ' << filled[x][y] << endl;
 
             glBegin(GL_POINTS);
             glColor3f(fill[0], fill[1], fill[2]);

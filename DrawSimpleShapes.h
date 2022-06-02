@@ -19,11 +19,11 @@
 //glVertex2d(
 
 
-void getColor(int x, int y, GLfloat *color) {
-    /// Specify the window coordinates of the first pixel that is read from the frame buffer. This location is the lower left corner of a rectangular block of pixels.
+GLfloat *getPixelColor(int x, int y) {
+    GLfloat *color = nullptr;
     glReadPixels(x, y, 1, 1, GL_RGBA, GL_FLOAT, color);
+    return color;
 }
-
 
 struct Point {
     int x, y;
