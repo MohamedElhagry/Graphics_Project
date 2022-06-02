@@ -16,22 +16,23 @@
 #include <gl\GLu.h>
 #include <iostream>
 
-bool glactive = 0;
-//glVertex2d(
-
+int glactive = 0;
 void glactivation() {
-    if (!glactive)
+    if (glactive == 0) {
         glBegin(GL_POINTS);
-    glactive = 1;
+        std::cout << "drawing" << std::endl;
+    }
+    glactive++;
 
 }
 
 void gldeactivation() {
-    if (glactive) {
+    if (glactive == 1) {
         glEnd();
         glFlush();
+        std::cout << "done" << std::endl;
     }
-    glactive = 0;
+    glactive--;
 
 }
 
