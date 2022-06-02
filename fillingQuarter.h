@@ -58,4 +58,55 @@ inline void FillQuarter(int xc, int yc, int R, GLfloat *drawingColor, int quarte
     } while (x < y);
 }
 
+inline void Draw2Points(int xc, int yc, int x, int y, int quarter) {
+
+    if (quarter == 1) {
+        glVertex2d(xc + x, yc + y);
+        glVertex2d(xc + y, yc + x);
+    } else if (quarter == 2) {
+        glVertex2d(xc + x, yc - y);
+        glVertex2d(xc + y, yc - x);
+    } else if (quarter == 3) {
+        glVertex2d(xc - x, yc - y);
+        glVertex2d(xc - y, yc - x);
+    } else if (quarter == 4) {
+        glVertex2d(xc - y, yc + x);
+        glVertex2d(xc - x, yc + y);
+    }
+
+}
+
+inline void drawThisQuarter(int xc, int yc, int R, int quarter) {
+
+    int x = 0, y = R;
+    int d = 1 - R, d1 = 3, d2 = 5 - 2 * R;
+    do {
+        Draw2Points(xc, yc, x, y, quarter);
+        if (d < 0) {
+            d += d1;
+            d2 += 2;
+        } else {
+            d += d2;
+            d2 += 4;
+            y--;
+        }
+        d1 += 2;
+        x++;
+
+    } while (x < y);
+
+}
+
+inline void FillQuarterWithCircles(int xc, int yc, int R, GLfloat *drawingColor, int quarter) {
+    glBegin(GL_POINTS);
+    glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
+
+    for (int r = 0; r < R; r++)
+        drawThisQuarter(xc, yc, r, quarter);
+
+    glEnd();
+    glFlush();
+
+}
+
 #endif //GRAPHICS_PROJECT_FILLINGQUARTER_H
