@@ -26,6 +26,12 @@ void getColor(int x, int y, GLfloat *color) {
 
 }
 
+struct Color {
+    GLubyte r;
+    GLubyte g;
+    GLubyte b;
+};
+
 struct Point {
     int x, y;
 

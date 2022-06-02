@@ -30,7 +30,7 @@ GLfloat Green[] = {0, 1, 0};
 GLfloat Black[] = {0, 0, 0};
 GLfloat White[] = {1, 1, 1};
 GLfloat Red[] = {1, 0, 0};
-
+Color color;
 RECT currColor = {340, 10, 383, 50};
 RECT Checkconsle = {350, 68, 373, 90};
 GLfloat backgroundColor[] = {1.0f, 1.0f, 0.0f};
@@ -427,9 +427,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
     static Point points[bufferSize];
     static bool inProcess = false;
     static int target, counter;
-    static int n;
     static double R, A, B;
-    static int xc, yc;
     static int quarter, num, dist;
     static vector<Point> pointsVec;
 
@@ -449,8 +447,8 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                     break;
                 case WHITE_BK: {
                     backgroundColor[0] = White[0];
-                    backgroundColor[0] = White[1];
-                    backgroundColor[0] = White[2];
+                    backgroundColor[1] = White[1];
+                    backgroundColor[2] = White[2];
                     clearScreen();
                     cout << "Background Color is White\n";
                     break;
@@ -739,11 +737,10 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                             case 7:     /// FloodFill
 
                                 //implement floodfill
-
                                 floodFill(hdc, points[0].x, points[0].y, toolsHigth, screenHeight + toolsHigth,
                                           screenWidth,
                                           RGB(drawingColor[0] * 255, drawingColor[1] * 255, drawingColor[2] * 255),
-                                          RGB(drawingColor[0] * 255, drawingColor[1] * 255, drawingColor[2] * 255));
+                                          drawingColor);
                                 break;
                             case 8:     /// Curve
                                 cardinalSplines(points, target, 1, drawingColor);
