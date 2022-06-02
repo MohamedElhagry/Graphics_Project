@@ -98,14 +98,13 @@ inline void drawThisQuarter(int xc, int yc, int R, int quarter) {
 }
 
 inline void FillQuarterWithCircles(int xc, int yc, int R, GLfloat *drawingColor, int quarter) {
-    glBegin(GL_POINTS);
+    glactivate();
     glColor3f(drawingColor[0], drawingColor[1], drawingColor[2]);
 
     for (int r = 0; r < R; r++)
         drawThisQuarter(xc, yc, r, quarter);
 
-    glEnd();
-    glFlush();
+    gldeactivate();
 
 }
 

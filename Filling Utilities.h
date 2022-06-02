@@ -21,7 +21,7 @@ inline bool sameCol(GLfloat *col1, GLfloat *col2) {
     return true;
 }
 
-inline void floodFill( GLint x, GLint y, int toolsHeight, int screenHeight, int screenWidth, GLfloat *borderCol,
+inline void floodFill(GLint x, GLint y, int toolsHeight, int screenHeight, int screenWidth, GLfloat *borderCol,
                       GLfloat *fill) {
     stack<Point> stack;
     stack.push(Point(x, y));
@@ -49,13 +49,12 @@ inline void floodFill( GLint x, GLint y, int toolsHeight, int screenHeight, int 
 
             cout << x << ' ' << y << ' ' << filled[x][y] << endl;
 
-            glBegin(GL_POINTS);
+            glactivate();
             glColor3f(fill[0], fill[1], fill[2]);
 
             glVertex2d(x, y);
 
-            glEnd();
-            glFlush();
+            gldeactivate();
 
             filled[x][y] = true;
             stack.push(Point(x, y - 1));
