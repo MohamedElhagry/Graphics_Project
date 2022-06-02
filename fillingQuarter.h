@@ -18,7 +18,7 @@ using namespace std;
 #include <gl\GLu.h>
 
 inline void Draw2Lines(int xc, int yc, int x, int y, GLfloat *drawingColor, int quarter) {
-    cout << quarter << endl;
+
     switch (quarter) {
         case 1:
             drawLine(xc, yc, xc + x, yc + y, drawingColor);

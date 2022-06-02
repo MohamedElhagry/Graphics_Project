@@ -25,15 +25,15 @@ const int bufferSize = 15;
 const int screenWidth = 800;
 const int screenHeight = 600 - toolsHigth;
 GLfloat drawingColor[] = {1.0f, 1.0f, 0.0f};
+const int menuHeight = 49;
 // defaults
 GLfloat Green[] = {0, 1, 0};
 GLfloat Black[] = {0, 0, 0};
 GLfloat White[] = {1, 1, 1};
 GLfloat Red[] = {1, 0, 0};
-Color color;
 RECT currColor = {340, 10, 383, 50};
 RECT Checkconsle = {350, 68, 373, 90};
-GLfloat backgroundColor[] = {1.0f, 1.0f, 0.0f};
+GLfloat backgroundColor[] = {0.9f, 0.9f, 0.9f};
 
 /// create menu
 HMENU hmenu;
@@ -41,6 +41,7 @@ HMENU hmenu;
 #define Load_File 2
 #define Clear_Screen 454
 #define WHITE_BK 11111
+#define SHOW_TOOLS 101
 
 void AddMenu(HWND hwnd) {
     hmenu = CreateMenu();
@@ -77,13 +78,12 @@ void SaveFile(HWND hwnd) {
     GetWindowRect(hwnd, &rect);
 
     uint32_t *pixels = (uint32_t *) malloc(sizeof(uint32_t) * screenWidth * screenHeight);
-
     glReadPixels(rect.left, rect.top, screenWidth, screenHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
     ofstream myfile;
     myfile.open("file.txt");
 
-    int long len = abs(screenWidth - rect.left) * abs(screenHeight - rect.top);
+    const int long len = abs(screenWidth - rect.left) * abs(screenHeight - rect.top);
     for (int long i = 0; i < len; i++) {
         myfile << pixels[i] << '\n';
     }
@@ -100,16 +100,19 @@ void SaveFile(HWND hwnd) {
 void LoadFile(HWND hwnd) {
     glBegin(GL_POINTS);
 
-    RECT rect = {0};
+    RECT rect;
+    GetWindowRect(hwnd, &rect);
+
     ifstream myfile;
     myfile.open("file.txt");
     uint32_t pixel;
 
-    for (int i = toolsHigth + 1; i < screenHeight; i++) {
-        for (int j = 0; j < screenWidth; j++) {
-            myfile >> pixel;
-            glColor4ubv((GLubyte *) &pixel);
-            glVertex2d(j, i);
+    for (int y = screenHeight - menuHeight; y > toolsHigth; y--) {
+        for (int x = 0; x < screenWidth; x++) {
+            if (myfile >> pixel) {
+                glColor4ubv((GLubyte *) &pixel);
+                glVertex2d(x, y);
+            }
         }
     }
 
@@ -138,8 +141,6 @@ void FillScreen(int xs, int xe, int ys, int ye, GLfloat *C) {
     glEnd();
     glFlush();
 }
-
-#define SHOW_TOOLS 101
 
 const int palletX = 10;
 const int palletY = 6;
@@ -184,9 +185,7 @@ int chooseTool(int x, int y, vector<vector<int>> &buttons) {
     return i;
 }
 
-void addShapesButtons();
-
-void addToolsSection() {
+void addColorsSection() {
 
     FillScreen(0, screenWidth, 0, toolsHigth, toolsBKColor);
     int i = 0, y, x;
@@ -197,7 +196,7 @@ void addToolsSection() {
 
         }
     }
-    addShapesButtons();
+
 }
 
 #define Shape_choice 4004
@@ -247,22 +246,23 @@ void drawOnShapeButtons() {
                       shapeButtons[1][2] + 33 + i, Black);
 
     /// Rectangle
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 3; i++)
         drawRectangle(shapeButtons[2][0] + 15 - i, shapeButtons[2][2] + 8 - i, shapeButtons[2][1] - 15 + i,
                       shapeButtons[2][3] - 8 + i, Black);
 
     /// Ellipse
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 3; i++)
         drawEllipsePolar(shapeButtons[3][0] + (shapesWidth / 2), shapeButtons[3][2] + (shapesHigth / 2), 25 + i,
                          10 + i, Black);
 
     /// Circle
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 3; i++)
         drawCircle(shapeButtons[4][0] + (shapesWidth / 2), shapeButtons[4][2] + (shapesHigth / 2), 13 + i, Black);
 
     /// Fill Circle
-    for (int i = 0; i < 17; i++)
-        drawCircle(shapeButtons[5][0] + (shapesWidth / 2), shapeButtons[5][2] + (shapesHigth / 2), i, Black);
+    drawCircle(shapeButtons[5][0] + (shapesWidth / 2), shapeButtons[5][2] + (shapesHigth / 2), 13, Black);
+
+    FillQuarter(shapeButtons[5][0] + (shapesWidth / 2), shapeButtons[5][2] + (shapesHigth / 2), 13, Black, 2);
 
     /// Fill
     FillRectangleWithHermite(shapeButtons[6][0] + 22, shapeButtons[6][2] + 13,
@@ -330,8 +330,7 @@ void drawOnShapeButtons() {
     }
 
     /// right line and bottom
-    for (int i = 0; i < 3; i++)
-        drawLine(0, toolsHigth + i, screenWidth, toolsHigth + i, toolsShading);
+    drawLine(0, toolsHigth, screenWidth, toolsHigth, toolsShading);
 
     for (int i = 7; i <= 10; i++)
         drawLine(currColor.right + i, 0, currColor.right + i, toolsHigth, toolsShading);
@@ -354,7 +353,7 @@ void drawOnShapeButtons() {
 }
 
 void addShapesButtons() {
-    ;
+
     int i = 0;
     GLfloat BBK[] = {1.0, 1.0, 1.0};
     for (int y = 0; y < NshapesHigth; y++) {
@@ -397,6 +396,7 @@ HGLRC InitOpenGl(HDC hdc) {
             0,                     // reserved
             0, 0, 0                // layer masks ignored
     };
+
     int iPixelFormat;
     iPixelFormat = ChoosePixelFormat(hdc, &pfd);
     SetPixelFormat(hdc, iPixelFormat, &pfd);
@@ -617,11 +617,14 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
             break;
         case SHOW_TOOLS:
 
-            // TODO create the tools section of every thing
-            //  String s;
-            addToolsSection();
+            // Color pallet
+            addColorsSection();
+
             // add shapes
             addShapesButtons();
+
+            // background color
+            clearScreen();
             break;
         case WM_SIZE:
             AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));
@@ -737,10 +740,8 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                             case 7:     /// FloodFill
 
                                 //implement floodfill
-                                floodFill(hdc, points[0].x, points[0].y, toolsHigth, screenHeight + toolsHigth,
-                                          screenWidth,
-                                          RGB(drawingColor[0] * 255, drawingColor[1] * 255, drawingColor[2] * 255),
-                                          drawingColor);
+                                floodFill(points[0].x, points[0].y, toolsHigth, screenHeight + toolsHigth,
+                                          screenWidth, drawingColor, drawingColor);
                                 break;
                             case 8:     /// Curve
                                 cardinalSplines(points, target, 1, drawingColor);
@@ -829,8 +830,8 @@ int APIENTRY WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh) {
                              NULL, NULL, hinst,
                              0);
     ShowWindow(hwnd, nsh);
-    SendMessage(hwnd, SHOW_TOOLS, 1, 1);        /// show all the tools
     UpdateWindow(hwnd);
+    SendMessage(hwnd, SHOW_TOOLS, 1, 1);        /// show all the tools
 
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0) > 0) {

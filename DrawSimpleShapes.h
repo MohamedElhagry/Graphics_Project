@@ -20,17 +20,10 @@
 
 
 void getColor(int x, int y, GLfloat *color) {
-    /// Get Color
+    /// Specify the window coordinates of the first pixel that is read from the frame buffer. This location is the lower left corner of a rectangular block of pixels.
     glReadPixels(x, y, 1, 1, GL_RGBA, GL_FLOAT, color);
-    std::cout << color[0] << ' ' << color[1] << ' ' << color[2] << '\t';
-
 }
 
-struct Color {
-    GLubyte r;
-    GLubyte g;
-    GLubyte b;
-};
 
 struct Point {
     int x, y;
