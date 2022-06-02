@@ -33,7 +33,7 @@ GLfloat White[] = {1, 1, 1};
 GLfloat Red[] = {1, 0, 0};
 RECT currColor = {340, 10, 383, 50};
 RECT Checkconsle = {350, 68, 373, 90};
-GLfloat backgroundColor[] = {0.0f, 0.0f, 0.0f};
+GLfloat backgroundColor[] = {0.8f, 0.8f, 0.8f};
 
 /// create menu
 HMENU hmenu;

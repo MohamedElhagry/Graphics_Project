@@ -17,10 +17,11 @@
 #include <iostream>
 
 int glactive = 0;
+
 void glactivation() {
     if (glactive == 0) {
         glBegin(GL_POINTS);
-        std::cout << "drawing" << std::endl;
+//        std::cout << "drawing" << std::endl;
     }
     glactive++;
 
@@ -30,7 +31,7 @@ void gldeactivation() {
     if (glactive == 1) {
         glEnd();
         glFlush();
-        std::cout << "done" << std::endl;
+//        std::cout << "done" << std::endl;
     }
     glactive--;
 
