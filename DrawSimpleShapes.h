@@ -24,7 +24,6 @@ void glactivation() {
 //        std::cout << "drawing" << std::endl;
     }
     glactive++;
-
 }
 
 void gldeactivation() {

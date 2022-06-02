@@ -77,13 +77,13 @@ void SaveFile(HWND hwnd) {
     RECT rect;
     GetWindowRect(hwnd, &rect);
 
-    uint32_t *pixels = (uint32_t *) malloc(sizeof(uint32_t) * screenWidth * screenHeight);
-    glReadPixels(rect.left, rect.top, screenWidth, screenHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    uint32_t *pixels = (uint32_t *) malloc(sizeof(uint32_t) * screenWidth * (screenHeight + toolsHigth));
+    glReadPixels(0, 0, screenWidth, screenHeight + toolsHigth, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
     ofstream myfile;
     myfile.open("file.txt");
 
-    const int long len = abs(screenWidth - rect.left) * abs(screenHeight - rect.top);
+    const int long len = screenWidth * (screenHeight + toolsHigth);
     for (int long i = 0; i < len; i++) {
         myfile << pixels[i] << '\n';
     }
@@ -98,7 +98,7 @@ void SaveFile(HWND hwnd) {
 }
 
 void LoadFile(HWND hwnd) {
-    glactivation();
+    glBegin(GL_POINTS);
 
     RECT rect;
     GetWindowRect(hwnd, &rect);
@@ -117,7 +117,8 @@ void LoadFile(HWND hwnd) {
     }
 
     myfile.close();
-    gldeactivation();
+    glEnd();
+    glFlush();
 
     cout << "Loaded from file.txt\n";
     cout.flush();
