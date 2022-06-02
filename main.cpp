@@ -720,7 +720,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                                 if (choice2 == 1) {
                                     FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
                                 } else if (choice2 == 2) {
-                                    //algorithm to fill quarter using circle
+                                    FillQuarterWithCircles(points[0].x, points[0].y, R, drawingColor, quarter);
                                 } else {
                                     FillQuarter(points[0].x, points[0].y, R, drawingColor, quarter);
                                 }
@@ -739,7 +739,11 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp) {
                             case 7:     /// FloodFill
 
                                 //implement floodfill
-                                //floodFill(hdc, points[0].x, points[0].y,toolsHigth, RGB(144,244,522));
+
+                                floodFill(hdc, points[0].x, points[0].y, toolsHigth, screenHeight + toolsHigth,
+                                          screenWidth,
+                                          RGB(drawingColor[0] * 255, drawingColor[1] * 255, drawingColor[2] * 255),
+                                          RGB(drawingColor[0] * 255, drawingColor[1] * 255, drawingColor[2] * 255));
                                 break;
                             case 8:     /// Curve
                                 cardinalSplines(points, target, 1, drawingColor);
