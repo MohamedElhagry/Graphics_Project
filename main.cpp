@@ -166,7 +166,7 @@ GLfloat Colors[NpalletWidth * NpalletHigth][3] = {{1.0f, 0,     0},
 vector<vector<int>> colorButtons;
 
 void drawBlock(int x1, int y1, int x3, int y3, vector<vector<int>> &buttons, GLfloat *c) {
-    FillRectangleWithHermite(x1, y1, x3, y3, c);
+    FillRectangleWithHermite(x1 + 2, y1 + 2, x3 - 2, y3 - 2, c);
     for (int i = 0; i < 2; i++) {
         drawRectangle(x1 - i, y1 - i, x3 + i, y3 + i, toolsShading);
     }
